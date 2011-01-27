@@ -10,7 +10,7 @@
 """
 import code
 import sys
-
+import model
 
 if len(sys.argv) < 2:
 	message = """
