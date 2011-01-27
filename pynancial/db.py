@@ -13,6 +13,7 @@ import sqlite3
 
 class DbHandler:
 	def __init__(self, db_path):
+		print("__init__ dbhandler")
 		self.db_path = db_path
 		self.conn = sqlite3.connect(db_path)
 		
@@ -27,6 +28,7 @@ class DbHandler:
 				cur.execute('''create table metatable (
 							tablename text unique not null,
 							tablegroup text unique not null)''')
+				print("metatable created")
 				self.conn.commit()
 				cur.close()
 	
