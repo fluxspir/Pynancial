@@ -10,7 +10,6 @@
 
 """
 import sqlite3
-import sys
 
 class DbHandler:
 	def __init__(self, db_path):
