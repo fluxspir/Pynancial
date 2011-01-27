@@ -60,7 +60,13 @@ class DbHandler:
 			tablelist = cur.fetchall()
 			cur.close()
 			return tablelist
-		elif tablelist.isalnum():
+		
+		cur.execute('''select tablename from metatable
+					where tablegroup={}'''.format(tablegroup))
+		tablelist = cur.fetchall()
+		cur.close()
+
+		if tablelist.isalnum():
 			cur.execute('''select tablename from metatable 
 						where tablegroup={} '''.format(tablegroup))
 			tablelist = cur.fetchall()
