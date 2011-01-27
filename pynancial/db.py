@@ -15,35 +15,36 @@ class DbHandler:
 	def __init__(self, db_path):
 		self.db_path = db_path
 		self.conn = sqlite3.connect(db_path)
-		self.c = self.conn.cursor()
-		self.exe = self.c.execute()
-		self.commit = self.conn.commit()
-		self.close = self.c.close()
-
-		self.c.execute('''select name from sqlite_master
+		
+		cur = self.conn.cursor()
+		cur.execute('''select name from sqlite_master
 									where name="metatable"''')
 		for metatable in self.c:
 			if not metatable:
-				self.exe('''create table metatable (
+				cur = self.conn.cursor()
+				cur.execute('''create table metatable (
 							tablename text unique not null,
 							tablegroup text unique not null)''')
-				self.commit()
-				self.close()
-		self.close()
+				self.conn.commit()
+				cur.close()
+		cur.close()
 	
 	def _testtableexists(self, table):
-		self.c.execute('''select name from sqlite_master where name="{}"
+		cur = self.conn.cursor()
+		cur.execute('''select name from sqlite_master where name="{}"
 				'''.format(table))
 		for r in self.c:
 			if not r:
 				self._createtable()
+		cur.close()
 
 	def _addmetatable(self, metadata):
+		cur = self.conn.cursor()
 		try:
-			self.exe('''insert into metatable ("tablename", "tablegroup")
+			cur.execute('''insert into metatable ("tablename", "tablegroup")
 					values (?,?) ''', metadata)
-			self.commit()
-			self.close()
+			self.conn.commit()
+			cur.close()
 			return
 		except IntegrityError:
 			message = "Error while adding new table values {} in metatable\n\
@@ -51,8 +52,10 @@ class DbHandler:
 			return message
 
 	def gettableslist(self, tablegroup=""):
+		cur = self.conn.cursor()
 		if not tablegroup:
-			tablelist = self.exe('''select tablename from metatable''')
+			tablelist = cur.execute('''select tablename from metatable''')
+			cur.close()
 			return tablelist
 		elif tablelist.isalnum():
 			tablelist = self.exe('''select tablename from metatable 
