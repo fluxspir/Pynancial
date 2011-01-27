@@ -13,8 +13,8 @@ import sqlite3
 import sys
 
 class DbHandler:
-	def __init__(self, db):
-		self.db = db
+	def __init__(self, db_path):
+		self.db_path = db_path
 		self.conn = sqlite3.connect(db)
 		self.c = self.conn.cursor()
 		self.exe = self.c.execute()
@@ -82,9 +82,9 @@ class StockDBHandler(DbHandler):
 		* DBStock.addstock(table, stockinfos)
 
 	"""
-	def __init__(self, db, table):
-		DbHandler.__init__(self, db)
-		self.db = db
+	def __init__(self, db_path, table):
+		DbHandler.__init__(self, db_path)
+		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "stock"
 		self.metadata = (self.table, self.tablegroup)
@@ -188,9 +188,9 @@ class IndexDbHandler(DbHandler):
 		altered with stockcode int (1/0) 
 
 	"""
-	def __init__(self, db, table):
-		DbHandler.__init__(self, db)
-		self.db = db
+	def __init__(self, db_path, table):
+		DbHandler.__init__(self, db_path)
+		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "index"
 		self.metadata = (self.table, self.tablegroup)
@@ -285,9 +285,9 @@ class ProviderDbHandler(DbHandler):
 
 	"""
 
-	def __init__(self, db, table):
-		DbHandler.__init__(self, db)
-		self.db = db
+	def __init__(self, db_path, table):
+		DbHandler.__init__(self, db_path)
+		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "provider"
 
@@ -461,9 +461,9 @@ class SymbolDbHandler(DbHandler):
 		Need to add a Provider before all.
 
 	"""
-	def __init__(self, db, table, providertable=""):
-		DbHandler.__init__(self, db)
-		self.db = db
+	def __init__(self, db_path, table, providertable=""):
+		DbHandler.__init__(self, db_path)
+		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "symbol"
 		symboltableexists = self._testtableexists()
@@ -536,9 +536,9 @@ class FormatDbHandler(DbHandler):
 			* format name human readable
 			
 	"""
-	def __init__(self, db, formattable):
-		DbHandler__init__(self, db)
-		self.db = db
+	def __init__(self, db_path, formattable):
+		DbHandler__init__(self, db_path)
+		self.db_path = db_path
 		self.table = formattable
 		self.tablegroup = "format"
 		formattableexists = self._testtableexists(self.table)

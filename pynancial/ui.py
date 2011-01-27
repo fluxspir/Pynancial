@@ -25,7 +25,7 @@ if len(sys.argv) < 2:
 	print(message)
 	sys.exit(1)
 
-db = sys.argv[1]
+db_path = sys.argv[1]
 
 def askuser(message):
 	userinteract = code.InteractiveConsole()
@@ -35,8 +35,8 @@ def askuser(message):
 def gettablelist(tablegroup=""):
 	""" """
 	tablelist = []
-	db = DBHandler(db)
-	tablesindb = db.gettablelist(tablegroup)
+	dbhandler = DBHandler(db_path)
+	tablesindb = dbhandler.gettablelist(tablegroup)
 	i = 1
 	for t in tablesindb:
 		tablelist.append((i, t))
@@ -49,8 +49,8 @@ def printtablelist(tablelist):
 
 def verifytableexists(tablename):
 	""" """
-	db = DBHandler(db)
-	tableindb = db.gettablename(tablename)
+	dbhandler = DBHandler(db_path)
+	tableindb = dbhandler.gettablename(tablename)
 	if tableindb:
 		return tableindb
 	else:
@@ -91,13 +91,8 @@ def addprovider():
 	def gethandlerfromtables():
 		""" """
 		providertable = choosetable("provider")
-		providerhandler = ProviderHandler(db, providertable)
+		providerhandler = db.ProviderHandler(db_path, providertable)
 		return providerhandler
-
-	def gettablefromtables():
-		""" """
-		symboltable = choosetable("symbol")
-		return symboltable
 
 	def getproviderinfos():
 		""" """

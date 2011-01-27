@@ -24,10 +24,10 @@ class ProviderHandler:
 		* pre_format
 		
 	"""
-	def __init__(self, db, table):
-		self.db = db
+	def __init__(self, db_path, table):
+		self.db_path = db_path
 		self.table = table
-		self.dbprovider = db.ProviderDbHandler(self.db, self.table)
+		self.dbprovider = db.ProviderDbHandler(self.db_path, self.table)
 
 	def addnewprovider(self, providerinfos, symboltable):
 		prvdmessage = self.dbprovider.addprovider(providerinfos, symboltable)
@@ -58,8 +58,8 @@ class QueryFormat():
 					( "price" , "actual price" ),
 					( "longname", long name" ) ]
 	"""
-	def __init__(self, db, formattable):
-		self.db = db
+	def __init__(self, db_path, formattable):
+		self.db_path = db_path
 		self.providertable = providertable
 		self.formattable = formattable
 		self.dbqueryformat = DBProvider(self.db, self.providertable)
@@ -87,8 +87,8 @@ class StockHandler():
 		
 	"""
 
-	def __init__(self, db, table):
-		db = self.db
+	def __init__(self, db_path, table):
+		db_path = self.db_path
 		self.table = table
 		self.dbstock = DBStock(self.db, self.table)
 		
@@ -110,8 +110,8 @@ class IndexHandler():
 		* alter with provider_codes
 
 	"""
-	def __init__(self, db, table):
-		self.db = db
+	def __init__(self, db_path, table):
+		self.db_path = db_path
 		self.table = table
 		self.dbindex = IndexDbHandler(self.db, self.table)
 
