@@ -56,14 +56,14 @@ class DbHandler:
 			return tablelist
 		elif tablelist.isalnum():
 			tablelist = self.exe('''select tablename from metatable 
-								where tablegroup={} '''.format(tablegroup)
+								where tablegroup={} '''.format(tablegroup))
 			return tablelist
 		else:
 			return
 
 	def gettablename(self, name):
 		tablename = self.exe('''select tablegroup from metatable
-							where tablename={} '''.format(tablename)
+							where tablename={} '''.format(tablename))
 		return tablename
 
 class StockDBHandler(DbHandler):

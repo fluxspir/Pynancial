@@ -9,7 +9,7 @@
 
 
 """
-from pynancial.db import *
+import pynancial.db
 
 class ProviderHandler:
 	"""
@@ -113,6 +113,6 @@ class IndexHandler():
 		addmessage = self.dbindex.addnewindex(indexinfos, symboltable)
 		print(addmessage)
 
-	def getindexcode(self, pattern)
+	def getindexcode(self, pattern):
 		pass
 

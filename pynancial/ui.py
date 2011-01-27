@@ -10,8 +10,7 @@
 """
 import code
 import sys
-#from pynancial.model import *
-import model 
+import pynancial.model 
 
 if len(sys.argv) < 2:
 	message = """
@@ -36,7 +35,7 @@ def askuser(message):
 def gettablelist(tablegroup=""):
 	""" """
 	tablelist = []
-	dbhandler = DBHandler(db_path)
+	dbhandler = db.DBHandler(db_path)
 	tablesindb = dbhandler.gettablelist(tablegroup)
 	i = 1
 	for t in tablesindb:
