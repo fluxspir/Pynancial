@@ -34,10 +34,11 @@ class DbHandler:
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master where name="{}"
 				'''.format(table))
-		for r in self.c:
+		tableexistresult = cur.fetchall()
+		cur.close()
+		for r in tableexistresult:
 			if not r:
 				self._createtable()
-		cur.close()
 
 	def _addmetatable(self, metadata):
 		cur = self.conn.cursor()
@@ -55,12 +56,14 @@ class DbHandler:
 	def gettableslist(self, tablegroup=""):
 		cur = self.conn.cursor()
 		if not tablegroup:
-			tablelist = cur.execute('''select tablename from metatable''')
+			cur.execute('''select tablename from metatable''')
+			tablelist = cur.fetchall()
 			cur.close()
 			return tablelist
 		elif tablelist.isalnum():
-			tablelist = cur.execute('''select tablename from metatable 
-								where tablegroup={} '''.format(tablegroup))
+			cur.execute('''select tablename from metatable 
+						where tablegroup={} '''.format(tablegroup))
+			tablelist = cur.fetchall()
 			cur.close()
 			return tablelist
 		else:
@@ -68,8 +71,9 @@ class DbHandler:
 
 	def gettablename(self, name):
 		cur = self.conn.cursor()
-		tablename = cur.execute('''select tablegroup from metatable
+		cur.execute('''select tablegroup from metatable
 							where tablename={} '''.format(tablename))
+		tablename = cur.fetchall()
 		cur.close()
 		return tablename
 
@@ -117,12 +121,13 @@ class StockDBHandler(DbHandler):
 											"name"(stockinfo[1] ) 
 		"""
 		tokenrefused = []
+		cur = self.conn.cursor()
 		for stockinfo in self.stockinfos:
 			try:
-				self.exe('''insert into {} ("code", "name", "location")
+				cur.execute('''insert into {} ("code", "name", "location")
 						values(?,?,?) '''.format(self.table), stockinfo)
-				self.commit()
-				self.close()
+				self.conn.commit()
+				cur.close()
 			except sqlite3.IntegrityError:
 				tokenrefused.append(tokencode)
 		return tokenrefused
@@ -203,27 +208,29 @@ class IndexDbHandler(DbHandler):
 		self.metadata = (self.table, self.tablegroup)
 
 	def _createtable(self):
+		cur = self.conn.cursor()
 		try:
-			self.exe('''create table {} (
+			cur.execute('''create table {} (
 					code text unique not null,
 					name text unique not null,
 					location text unique not null)
 					'''.format(self.table))
-			self.commit()
-			self.close()
+			self.conn.commit()
+			cur.close()
 			self._addmetatable(metadata)
 		except sqlite3.OperationalError:
 			print("table {} already exists".format(self.table))
 
 	def _inserttable(self):
 		""" """
+		cur = self.conn.cursor()
 		tokenrefused = []
 		for indexinfo in self.indexinfos:
 			try:
-				self.exe("""insert into {} ("code", "name", "location") \
+				cur.execute("""insert into {} ("code", "name", "location") \
 				values (?,?,?)""".format(self.table), indexinfo)
-				self.commit()
-				self.close()
+				self.conn.commit()
+				cur.close()
 			except sqlite3.IntegrityError:
 				tokenrefused.append(indexinfo)
 		return tokenrefused
@@ -299,38 +306,43 @@ class ProviderDbHandler(DbHandler):
 		self.tablegroup = "provider"
 
 	def _createtable(self):
+		cur = self.conn.cursor()
 		try:
-			self.exe('''create table {} (
+			cur.execute('''create table {} (
 					name text unique not null,
 					baseurl text not null,
 					preformat text,
 					presymbol text )'''.format(self.table))
-			self.commit()
-			self.close()
+			self.conn.commit()
+			cur.close()
 		except sqlite3.OperationalError:
 			print("table {} already exists".format(self.table))
 
 	def _alterwithnewformat(self, formatnames):
 		""" formatnames = ( name1, name2, names3, )"""
+		cur = self.conn.cursor()
 		alreadyknownformat = []
 		for formatname in formatnames:
 			try:
-				self.exe('''alter table {} add {} text)
+				cur.execute('''alter table {} add {} text)
 						'''.format(self.table, formatname))
+				self.conn.commit()
+				cur.close
 			except OperationalError:
 				alreadyknownsformat.append(formatname)
 		return alreadyknownsformat
 
 	def _insertnewprovider(self):
 		""" """
+		cur = self.conn.cursor()
 		providerrefused = []
 		for providerinfo in self.providerinfos:
 			try:
-				self.exe('''insert into {} ("name", "baseurl", "preformat",
+				cur.execute('''insert into {} ("name", "baseurl", "preformat",
 						"presymbol") values (?,?,?,?) )
 						'''.format(self.table), providerinfo)
-				self.commit()
-				self.close()
+				self.conn.commit()
+				cur.close()
 			except IntegrityError:
 				providerrefused.append(providerinfo)
 		return providerrefused
@@ -482,20 +494,23 @@ class SymbolDbHandler(DbHandler):
 				new symboltables {} be reliated.\n".format(self.table))
 
 	def _testtableexists(self):
-			self.c.execute('''select name from sqlite_master where name='{}'
-					'''.format(providertable))
-			for r in self.c:
-				return r
-			self.close()
-	
+		cur = self.conn.cursor()
+		cur.execute('''select name from sqlite_master where name='{}'
+				'''.format(providertable))
+		testinmetatable = cur.fetchall()
+		cur.close()
+		for r in testinmetatable:
+			return r
+
 	def _createtable(self, providertable):
+		cur = self.conn.cursor()
 		try:
-			self.exe('''create table {} (
+			cur.execute('''create table {} (
 					provider text unique not null,
 					foreign key(provider) references {}(name)
 					'''.format(self.table, providertable))
-			self.commit()
-			self.close()
+			self.conn.commit()
+			cur.close()
 		except sqlite3.OperationalError:
 			print("Table of symbols {} already exists".format(self.table))
 			pass
@@ -504,13 +519,14 @@ class SymbolDbHandler(DbHandler):
 		""" 
 		providernames = ( "provider1", "provider2", )
 		"""
+		cur = self.conn.cursor()
 		providerrefused = []
 		for providername in providernames:
 			try:
-				self.exe('''insert into {} ("provider") values (?)
+				cur.execute('''insert into {} ("provider") values (?)
 					'''.format(self.table), providername)
-				self.commit()
-				self.close()
+				self.conn.commit()
+				cur.close()
 			except IntegrityError:
 				providerrefused.append(providername)
 		return providerrefused
@@ -520,13 +536,14 @@ class SymbolDbHandler(DbHandler):
 		locationtable = ( location1, "NYSE", Paris, )
 		tokentable = DBStock or DBIndex, or DBTrackers...
 		"""
+		cur = self.conn.cursor()
 		tokenrefused = []
 		for tokencode in tokencodes:
 			try:
-				self.exe('''alter table {} add {} text
+				cur.execute('''alter table {} add {} text
 						'''.format(self.table, tokencode))
-				self.commit()
-				self.close()
+				self.conn.commit()
+				cur.close()
 			except sqlite3.OperationalError:
 				tokenrefused.append(tokencode)
 		return tokenrefused
@@ -557,12 +574,13 @@ class FormatDbHandler(DbHandler):
 			(cf BDFormat.insertformat() )
 		name = text, unique, human readable name
 		"""
+		cur = self.conn.cursor()
 		try:
-			self.exe('''create table {} (
+			cur.execute('''create table {} (
 					collumname text unique,
 					explicitname text not null)'''.format(self.table))
-			self.commit()
-			self.close()
+			self.conn.commit()
+			cur.close()
 		except sqlite3.OperationalError:
 			print("the table {} already exists".format(self.table))
 			
@@ -574,13 +592,14 @@ class FormatDbHandler(DbHandler):
 						(	"lname", "long name"),
 						(	"nowprice", "actual price") ]
 		"""
+		cur = self.conn.cursor()
 		formatrefused = []
 		for newformat in newformats:
 			try:
-				self.exe('''insert into {} ("collumname", "explicitname") \
+				cur.execute('''insert into {} ("collumname", "explicitname") \
 						values(?,?))'''.format(self.table), newformat)
-				self.commit()
-				self.close()
+				self.conn.commit()
+				cur.close()
 			except sqlite3.IntegrityError:
 				formatrefused = []
 		return formatrefused
