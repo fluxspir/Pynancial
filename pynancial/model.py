@@ -9,7 +9,7 @@
 
 
 """
-import db
+from pynancial.db import *
 
 class ProviderHandler:
 	"""
@@ -42,7 +42,7 @@ class ProviderHandler:
 		where providername = 'providername'
 		"""
 
-	def addnewproviderformat(self, providername, formats)
+	def addnewproviderformat(self, providername, formats):
 		"""
 		add to provider "providername" the format
 		formats = [ ( "formatname" , "formatprovidercode" ) ,
@@ -51,7 +51,7 @@ class ProviderHandler:
 		where providername = 'providername'
 		"""
 
-	def addformattype(self, formattable, formatinfos)
+	def addformattype(self, formattable, formatinfos):
 		"""
 		alter providertable with formatcollums ;
 		insert into formattable [ ( "formatname" , "explicit format name"), ]

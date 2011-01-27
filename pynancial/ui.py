@@ -10,7 +10,7 @@
 """
 import code
 import sys
-import model
+from pynancial.model import *
 
 if len(sys.argv) < 2:
 	message = """
@@ -80,7 +80,7 @@ def choosetable(tablegroup):
 	tablelist = gettablelist(tablegroup)
 	message = "Which table do you want to use ?\n\
 	Most people will only need one table. If the table you want to\
-	use is not in the list, just write its name please.\n")
+	use is not in the list, just write its name please.\n"
 	printablelist(tablelist)
 	tablename = askuser("Table number, or new table name : ")
 	testtablename(tablename)
