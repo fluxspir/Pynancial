@@ -11,7 +11,7 @@
 """
 import pynancial.db as db
 
-class TableGroupHandler():
+class TableGroupHandler:
 	"""
 	
 	We have several group of tables in the database : 
@@ -32,12 +32,13 @@ class TableGroupHandler():
 		return a tuple with name of each known table in the 
 		"""
 		tablelist = []
-		dbhandler = db.DBHandler(db_path)
+		dbhandler = db.DbHandler(self.db_path)
 		tablesindb = dbhandler.gettablelist(tablegroup)
 		i = 1
 		for t in tablesindb:
 			tablelist.append((i, t))
-			i++
+			i = i + 1
+
 		return tablelist
 
 	def verifytableexists(self, tablename):

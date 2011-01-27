@@ -14,7 +14,7 @@ import sqlite3
 class DbHandler:
 	def __init__(self, db_path):
 		self.db_path = db_path
-		self.conn = sqlite3.connect(db)
+		self.conn = sqlite3.connect(db_path)
 		self.c = self.conn.cursor()
 		self.exe = self.c.execute()
 		self.commit = self.conn.commit()

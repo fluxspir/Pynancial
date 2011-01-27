@@ -66,7 +66,7 @@ def choosetable(tablegroup):
 	after displaying to user tables known, ask to user to pick one.
 	returns the user's choice.
 	"""
-	metatable = model.TableGroupHandler()
+	metatable = model.TableGroupHandler(db_path)
 	tablelist = metatable.gettablelist(tablegroup)
 	message = "Which table do you want to use ?\n\
 	Most people will only need one table. If the table you want to\
