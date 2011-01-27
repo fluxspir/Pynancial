@@ -10,7 +10,7 @@
 """
 import code
 import sys
-import pynancial.model 
+import pynancial.model as model
 
 if len(sys.argv) < 2:
 	message = """
