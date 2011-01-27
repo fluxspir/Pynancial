@@ -9,7 +9,48 @@
 
 
 """
-import pynancial.db
+import pynancial.db as db
+
+class TableGroupHandler():
+	"""
+	
+	We have several group of tables in the database : 
+		* The "format" ones		:(usually : only one)
+		* The "provider" ones	:(usually : only one)
+		* The "symbol" ones	:(usually : only one)
+		* The "stock" ones : (may be several)
+		* The "index" ones : (may be several)
+	
+	One unique table, the metatable, will connect table-name with table-group
+	
+	"""
+	def __init__(self, db_path):
+		self.db_path = db_path
+
+	def gettablelist(self, tablegroup=""):
+		""" 
+		return a tuple with name of each known table in the 
+		"""
+		tablelist = []
+		dbhandler = db.DBHandler(db_path)
+		tablesindb = dbhandler.gettablelist(tablegroup)
+		i = 1
+		for t in tablesindb:
+			tablelist.append((i, t))
+			i++
+		return tablelist
+
+	def verifytableexists(self, tablename):
+		""" 
+		apparently never called :/
+		"""
+		dbhandler = db.DBHandler(db_path)
+		tableindb = dbhandler.gettablename(tablename)
+		if tableindb:
+			return tableindb
+		else:
+			return
+
 
 class ProviderHandler:
 	"""

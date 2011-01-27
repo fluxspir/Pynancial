@@ -32,32 +32,18 @@ def askuser(message):
 	response = userinteract.rawinput(message)
 	return response
 
-def gettablelist(tablegroup=""):
-	""" """
-	tablelist = []
-	dbhandler = db.DBHandler(db_path)
-	tablesindb = dbhandler.gettablelist(tablegroup)
-	i = 1
-	for t in tablesindb:
-		tablelist.append((i, t))
-	return tablelist
-
 def printtablelist(tablelist):
 	""" """
 	for t in tablelist:
 		print(" {} : {}".format(t[0], t[1]))
 
-def verifytableexists(tablename):
-	""" """
-	dbhandler = DBHandler(db_path)
-	tableindb = dbhandler.gettablename(tablename)
-	if tableindb:
-		return tableindb
-	else:
-		return
-
 def testtablename(tablename):
-	""" """
+	""" 
+	the tablename the user decided may be :
+		* a number   : means that user wants to use a already known table
+		* a name : without spaces, exotic characters (...) ; 
+	function test that, and return the tablename chosen.
+	"""
 	if not tablename:
 		addprovider()
 	elif tablename.isdigit():
@@ -76,8 +62,12 @@ def testtablename(tablename):
 		addprovider()
 
 def choosetable(tablegroup):
-	""" """
-	tablelist = gettablelist(tablegroup)
+	""" 
+	after displaying to user tables known, ask to user to pick one.
+	returns the user's choice.
+	"""
+	metatable = model.TableGroupHandler()
+	tablelist = metatable.gettablelist(tablegroup)
 	message = "Which table do you want to use ?\n\
 	Most people will only need one table. If the table you want to\
 	use is not in the list, just write its name please.\n"
