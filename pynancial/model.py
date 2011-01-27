@@ -33,7 +33,7 @@ class TableGroupHandler:
 		"""
 		tablelist = []
 		dbhandler = db.DbHandler(self.db_path)
-		tablesindb = dbhandler.gettablelist(tablegroup)
+		tablesindb = dbhandler.gettableslist(tablegroup)
 		i = 1
 		for t in tablesindb:
 			tablelist.append((i, t))
