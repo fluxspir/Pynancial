@@ -42,7 +42,7 @@ class ProviderHandler:
 		where providername = 'providername'
 		"""
 
-	def addproviderformat(self, providername, formats)
+	def addnewproviderformat(self, providername, formats)
 		"""
 		add to provider "providername" the format
 		formats = [ ( "formatname" , "formatprovidercode" ) ,
@@ -51,23 +51,17 @@ class ProviderHandler:
 		where providername = 'providername'
 		"""
 
-
-class QueryFormat():
-	"""
-	formatinfos = [ ("name_without_spaces", "explicit name" ),
-					( "price" , "actual price" ),
-					( "longname", long name" ) ]
-	"""
-	def __init__(self, db_path, formattable):
-		self.db_path = db_path
-		self.providertable = providertable
+	def addformattype(self, formattable, formatinfos)
+		"""
+		alter providertable with formatcollums ;
+		insert into formattable [ ( "formatname" , "explicit format name"), ]
+		"""
 		self.formattable = formattable
-		self.dbqueryformat = DBProvider(self.db, self.providertable)
-	
-	def addformat(self, formatinfos, providertable):
-		addmessage = self.dbqueryformat.addformat(self.formattable, \
-												formatinfos)
-		print(addmessage)
+		self.addformattype = db.DBProvider(self.db_path, self.table)
+		addformattypemessage  = self.addformattype.addformat(self.formattable,\
+													formatinfos)
+		return addformattypemessage
+
 
 class StockHandler():
 	"""
