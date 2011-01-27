@@ -19,7 +19,9 @@ class DbHandler:
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master
 									where name="metatable"''')
-		for metatable in self.c:
+		metatableresult = cur.fetchall()
+		cur.close()
+		for metatable in metatableresult:
 			if not metatable:
 				cur = self.conn.cursor()
 				cur.execute('''create table metatable (
@@ -27,7 +29,6 @@ class DbHandler:
 							tablegroup text unique not null)''')
 				self.conn.commit()
 				cur.close()
-		cur.close()
 	
 	def _testtableexists(self, table):
 		cur = self.conn.cursor()
@@ -58,15 +59,18 @@ class DbHandler:
 			cur.close()
 			return tablelist
 		elif tablelist.isalnum():
-			tablelist = self.exe('''select tablename from metatable 
+			tablelist = cur.execute('''select tablename from metatable 
 								where tablegroup={} '''.format(tablegroup))
+			cur.close()
 			return tablelist
 		else:
 			return
 
 	def gettablename(self, name):
-		tablename = self.exe('''select tablegroup from metatable
+		cur = self.conn.cursor()
+		tablename = cur.execute('''select tablegroup from metatable
 							where tablename={} '''.format(tablename))
+		cur.close()
 		return tablename
 
 class StockDBHandler(DbHandler):
@@ -92,14 +96,15 @@ class StockDBHandler(DbHandler):
 		self.metadata = (self.table, self.tablegroup)
 
 	def _createtable(self):
+		cur = self.conn.cursor()
 		try:
-			self.exe('''create table {} (
+			cur.execute('''create table {} (
 						code text unique not null,
 						name text unique not null
 						location text)
 						'''.format(self.table))
-			self.commit()
-			self.close()
+			self.conn.commit()
+			cur.close()
 			self._addmetatable(self.metadata)
 		except OperationalError:
 			print("Table {} already exists".format(self.table))
