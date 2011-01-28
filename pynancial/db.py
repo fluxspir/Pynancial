@@ -32,13 +32,18 @@ class DbHandler:
 			cur.close()
 
 	def _testtableexists(self, table):
+		print(table)
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master where name="{}"
 				'''.format(table))
 		tableexistresult = cur.fetchall()
 		cur.close()
+		print(tableexistresult)
 		for r in tableexistresult:
+			print(r)
 			if not r:
+				print(r)
+				print("about to create table")
 				self._createtable()
 
 	def _addmetatable(self, metadata):
@@ -325,6 +330,8 @@ class ProviderDbHandler(DbHandler):
 
 	def _createtable(self):
 		cur = self.conn.cursor()
+		print("i'm in create table")
+		print(self.table)
 		try:
 			cur.execute('''create table {} (
 					name text unique not null,
@@ -355,6 +362,8 @@ class ProviderDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		providerrefused = []
 		for providerinfo in self.providerinfos:
+			print(providerinfo[0]
+			self._testtableexists(providerinfo[0])
 			try:
 				cur.execute('''insert into {} ("name", "baseurl", "preformat",
 						"presymbol") values (?,?,?,?)
