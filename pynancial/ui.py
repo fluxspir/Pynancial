@@ -7,7 +7,10 @@
 
 """
 
+
+
 """
+
 import code
 import sys
 import pynancial.model as model
@@ -19,17 +22,22 @@ class UserInteract:
 	
 	"""
 	def __init__(self, user=""):
+		""" """
 		pass
 
 	def askuser(self, message):
+		""" """
 		userinteract = code.InteractiveConsole()
 		response = userinteract.raw_input(message)
 		return response
 
-    def printtablelist(self, tablelist):
-        """ print the table list :
+    def _printtablelist(self, tablelist):
+        """ 
+		print the table list :
                 1   table_1
                 2   table_2
+		from tablelist [ ( 1, table_1 ), ... ]
+		be careful : 1 = tablelist[0]
         """
         for t in tablelist:
             print(" {} : {}".format(t[0], t[1]))
@@ -47,7 +55,7 @@ class UserInteract:
 		Most people will only need one table. If the table you want to\
 		use is not in the list, just write its name please.\n\n"
 		print(message)
-		self.printtablelist(tablelist)
+		self._printtablelist(tablelist)
 		tablename = self.askuser("Table number, or new table name, please :  ")
 		dbinteract._testtablename(tablename)
 		return tablename
