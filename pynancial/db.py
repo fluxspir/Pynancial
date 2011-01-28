@@ -537,7 +537,7 @@ class SymbolDbHandler(DbHandler):
 #		try:
 		cur.execute('''create table {} (
 				provider text unique not null,
-				foreign key(provider) references {}(name)
+				foreign key(provider) references {}(name))
 				'''.format(self.table, providertable))
 		self.conn.commit()
 		cur.close()
@@ -558,6 +558,7 @@ class SymbolDbHandler(DbHandler):
 				cur.close()
 			except sqlite3.OperationalError:
 				self._createtable(providername)
+				self._insertnewprovider(providernames)
 			except sqlite3.IntegrityError:
 				providerrefused.append(providername)
 		return providerrefused

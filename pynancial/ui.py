@@ -50,8 +50,9 @@ class UserInteract:
 		dbinteract = TableGroupHandlerInteract(db_path)
 
 		tablelist = dbinteract.gettablelist(tablegroup)
+		print(tablelist)
 		message = "Which table do you want to use ?\n\
-Most people will only need one table. If the table you want to\
+Most people will only need one table. If the table you want to \
 use is not in the list, just write its name please.\n"
 		print(message)
 		self.printtablelist(tablelist)
