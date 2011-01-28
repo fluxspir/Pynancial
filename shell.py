@@ -5,16 +5,18 @@
 #
 
 from pynancial.ui import *
+while True:
+	addprovider()
+	print("new try to add")
 
 while True:
-    print("What do you want to do ?\n\
-        1 Add to database\n")
+    response = userinteract.raw_input("What do you want to do ?\n\
+        1 Extend database\n")
 #        2 Find in database\n\
 #        3 Create URL\n\
 #        9 Quit\n")
 
     userinteract = code.InteractiveConsole()
-    response = userinteract.raw_input("tell me\n")
     if int(response) == 1:
         response = userinteract.raw_input("What do you want to add ?\n\
             1 provider\n")

@@ -61,29 +61,16 @@ def testtablename(tablename):
 		print(message)
 		addprovider()
 
-def choosetable(tablegroup):
-	""" 
-	after displaying to user tables known, ask to user to pick one.
-	returns the user's choice.
-	"""
-	metatable = model.TableGroupHandler(db_path)
-	tablelist = metatable.gettablelist(tablegroup)
-	message = "Which table do you want to use ?\n\
-	Most people will only need one table. If the table you want to\
-	use is not in the list, just write its name please.\n"
-	printtablelist(tablelist)
-	tablename = askuser("Table number, or new table name : ")
-	testtablename(tablename)
-	return tablename
-
 def addprovider():
 	""" """
-	def gethandlerfromtables():
-		""" """
-		providertable = choosetable("provider")
-		providerhandler = db.ProviderHandler(db_path, providertable)
-		return providerhandler
+	providerhandler = db.ProviderHandler(db_path, providertable)
 
+#	def gethandlerfromtables():
+#		""" """
+#		providertable = choosetable("provider")
+#		providerhandler = db.ProviderHandler(db_path, providertable)
+#		return providerhandler
+#
 	def getproviderinfos():
 		""" """
 		providerinfos = []
@@ -101,9 +88,11 @@ def addprovider():
 
 		providerinfos = interactuser()
 		return providerinfos
-
-	symboltable = choosetable("symbol")
-	providerhandler = gethandlerfromtables()
+	
+	print("adding new provider")
+	print("select symbols table")
+	symboltable = model.choosetable("symbol")
+	providerhandler.gethandlerfromtables()
 	provider.addnewprovider(providerinfos, symboltable)
 
 def addstock():
