@@ -362,14 +362,16 @@ class ProviderDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		providerrefused = []
 		for providerinfo in self.providerinfos:
-			print(providerinfo[0]
-			self._testtableexists(providerinfo[0])
+			print(providerinfo[0])
 			try:
 				cur.execute('''insert into {} ("name", "baseurl", "preformat",
 						"presymbol") values (?,?,?,?)
 						'''.format(self.table), providerinfo)
 				self.conn.commit()
 				cur.close()
+			except sqlite3.OperationalError:
+				self._createtable()
+				self._insertnewprovider()
 			except sqlite3.IntegrityError:
 				providerrefused.append(providerinfo)
 		return providerrefused
@@ -385,7 +387,7 @@ class ProviderDbHandler(DbHandler):
 				match with the token(stock, indice...)_name.
 				symboltable = DBSymbol.__tablename__
 			* Format table name : where 
-			formattable = DBFormat.__tablname__
+			formattable = DBFormat.__tablename__
 		"""
 		self.providerinfos = providerinfos
 		self.symboltable = symboltable
@@ -427,8 +429,9 @@ class ProviderDbHandler(DbHandler):
 			return message
 
 		# add providername into Symbol database
-		self.dbsymbol = SymbolDbHandler(self.db, self.symboltable, self.table)
-		symboladd = self.dbsymbol._insertnewprovider(tup(providernames))
+		self.dbsymbol = SymbolDbHandler(self.db_path, self.symboltable, \
+										self.table)
+		symboladd = self.dbsymbol._insertnewprovider(tuple(providernames))
 		if symboladd:
 			message = "provider(s) {} where already in symboldatabase {}\n\
 			".format(providernames, self.symboltable)
@@ -512,10 +515,11 @@ class SymbolDbHandler(DbHandler):
 		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "symbol"
+		self.providertable = providertable
 		symboltableexists = self._testtableexists()
 		if not symboltableexists:
 			if providertable:
-				self._createtable(providertable)
+				self._createtable(self.providertable)
 			else:
 				print("Please give the providertable name you want \
 				new symboltables {} be reliated.\n".format(self.table))
@@ -523,7 +527,7 @@ class SymbolDbHandler(DbHandler):
 	def _testtableexists(self):
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master where name='{}'
-				'''.format(providertable))
+				'''.format(self.providertable))
 		testinmetatable = cur.fetchall()
 		cur.close()
 		for r in testinmetatable:
@@ -554,7 +558,10 @@ class SymbolDbHandler(DbHandler):
 					'''.format(self.table), providername)
 				self.conn.commit()
 				cur.close()
-			except IntegrityError:
+			except sqlite3.OperationalError:
+				self._createtable(self.providertable)
+				self._insertnewprovider(providernames)
+			except sqlite3.IntegrityError:
 				providerrefused.append(providername)
 		return providerrefused
 
