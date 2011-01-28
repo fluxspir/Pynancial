@@ -357,11 +357,11 @@ class ProviderDbHandler(DbHandler):
 		for providerinfo in self.providerinfos:
 			try:
 				cur.execute('''insert into {} ("name", "baseurl", "preformat",
-						"presymbol") values (?,?,?,?) )
+						"presymbol") values (?,?,?,?)
 						'''.format(self.table), providerinfo)
 				self.conn.commit()
 				cur.close()
-			except IntegrityError:
+			except sqlite3.IntegrityError:
 				providerrefused.append(providerinfo)
 		return providerrefused
 
@@ -382,8 +382,8 @@ class ProviderDbHandler(DbHandler):
 		self.symboltable = symboltable
 
 		providernames = []
-		def testproviderinfos(self):
-			print("testinput good")
+		def testproviderinfos():
+			""" """
 			for chunk in providerinfos:
 				if not chunk[0].isalnum():
 					print("provider name {} must be alphanumeric please\n\
@@ -401,7 +401,7 @@ class ProviderDbHandler(DbHandler):
 					print("Enter presymbol {} valid please\n\
 					".format(chunk[3]))
 					return
-				chunk[0].append(providernames)
+				providernames.append(chunk[0])
 			return providernames
 		
 		providernames = testproviderinfos()
@@ -409,7 +409,7 @@ class ProviderDbHandler(DbHandler):
 			message = "Please correct wrongly_written values\n"
 			return message
 		# see if table exists, otherwise, create it.
-		_testtableexists(self.table)
+		self._testtableexists(self.table)
 		# add providerinfos in providertable
 		providerrefused = self._insertnewprovider()
 		if providerrefused:

@@ -107,26 +107,27 @@ def addprovider(db_path):
 	
 	"""
 	usrint = UserInteract()
-	providerinfos = []
 	def getproviderinfos():
 		"""
 		tablelist = [ ( number(start at 1) , tablename ) ]
 		"""
+		providerinfos = []
 		def interactuser():
-			name = usrint.askuser("provider short name ; ex : yahoo")
-			baseurl = usrint.askuser("baseurl for your provider")
-			preformat = usrint.askuser("url part that introduce queryformat")
-			presymbol = usrint.askuser("url part that introduce symbols")
+			name = usrint.askuser("provider short name ; ex : yahoo	: ")
+			baseurl = usrint.askuser("baseurl for your provider		: ")
+			preformat = usrint.askuser("url part that introduce queryformat :")
+			presymbol = usrint.askuser("url part that introduce symbols	:	")
 			providerinfo = ( name, baseurl, preformat, presymbol )
 			providerinfos.append(providerinfo)
-			addprvd = askuser("do you want to add an other provider ? y/n")
-			if addprvd == y:
-				inderactuser()
+			addprvd = usrint.askuser("add an other provider ? y/n :	")
+			if addprvd == "y":
+				interactuser()
 			return providerinfos
 
 		providerinfos = interactuser()
 		return providerinfos
 
+	providerinfos = getproviderinfos()
 	print("adding new provider")
 	print("select provider's table")
 	providertable = usrint.choosetable("provider")
