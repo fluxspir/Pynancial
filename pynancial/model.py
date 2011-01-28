@@ -27,7 +27,7 @@ class TableGroupHandler:
 	def __init__(self, db_path):
 		self.db_path = db_path
 
-	def _gettablelist(self, tablegroup=""):
+	def gettablelist(self, tablegroup=""):
 		""" 
 		return tablelist : a list of tuples to assignate 
 			[	(number  ,  tablename) , ]
@@ -43,14 +43,6 @@ class TableGroupHandler:
 				i += 1
 		return tablelist
 
-	def printtablelist(tablelist):
-		""" print the table list :
-				1   table_1
-				2	table_2
-		"""
-		for t in tablelist:
-			print(" {} : {}".format(t[0], t[1]))
-		
 	def verifytableexists(self, tablename):
 		""" 
 		return tablename if tablename in metatable, false otherwise
@@ -61,21 +53,6 @@ class TableGroupHandler:
 			return tableindb
 		else:
 			return
-
-	def choosetable(self, tablegroup=""):
-		""" 
-		after displaying to user tables known, ask to user to pick one.
-		returns the user's choice.
-		"""
-		print("searching in metatable for tablegroup {}\n".format(tablegroup))
-		tablelist = self.gettablelist(tablegroup)
-		message = "Which table do you want to use ?\n\
-		Most people will only need one table. If the table you want to\
-		use is not in the list, just write its name please.\n\n"
-		self.printtablelist(tablelist)
-		tablename = askuser("Table number, or new table name, please :  ")
-		testtablename(tablename)
-		return tablename
 
 class ProviderHandler(TableGroupHandler):
 	"""
@@ -129,7 +106,7 @@ class ProviderHandler(TableGroupHandler):
 		return addformattypemessage
 
 
-class StockHandler():
+class StockHandler(TableGroupHandler):
 	"""
 	
 	"FR", "US" , "mystocks"
@@ -159,7 +136,7 @@ class StockHandler():
 	def getstockcode(self, pattern):
 		pass
 
-class IndexHandler():
+class IndexHandler(TableGroupHandler):
 	"""
 	
 	"dj30", "nasdaq100", "cac40" 

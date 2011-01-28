@@ -5,6 +5,22 @@
 #
 
 from pynancial.ui import *
+
+if len(sys.argv) < 2:
+    message = """
+
+    NOM
+        pyFinancial.py
+
+    SYNOPSIS
+        pyFinancial.py file.db
+
+    """
+    print(message)
+    quit()
+
+db_path = sys.argv[1]
+
 while True:
 	addprovider()
 	print("new try to add")
