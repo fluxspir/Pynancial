@@ -29,7 +29,7 @@ db_path = sys.argv[1]
 
 def askuser(message):
 	userinteract = code.InteractiveConsole()
-	response = userinteract.rawinput(message)
+	response = userinteract.raw_input(message)
 	return response
 
 def printtablelist(tablelist):
@@ -71,7 +71,7 @@ def choosetable(tablegroup):
 	message = "Which table do you want to use ?\n\
 	Most people will only need one table. If the table you want to\
 	use is not in the list, just write its name please.\n"
-	printablelist(tablelist)
+	printtablelist(tablelist)
 	tablename = askuser("Table number, or new table name : ")
 	testtablename(tablename)
 	return tablename

@@ -12,8 +12,9 @@
 import sqlite3
 
 class DbHandler:
+	"""
+	"""
 	def __init__(self, db_path):
-		print("__init__ dbhandler")
 		self.db_path = db_path
 		self.conn = sqlite3.connect(db_path)
 		
@@ -21,17 +22,15 @@ class DbHandler:
 		cur.execute('''select name from sqlite_master
 									where name="metatable"''')
 		metatableresult = cur.fetchall()
-		cur.close()
-		for metatable in metatableresult:
-			if not metatable:
-				cur = self.conn.cursor()
-				cur.execute('''create table metatable (
-							tablename text unique not null,
-							tablegroup text unique not null)''')
-				print("metatable created")
-				self.conn.commit()
-				cur.close()
-	
+		if not metatableresult:
+			cur = self.conn.cursor()
+			cur.execute('''create table metatable (
+						tablename text unique not null,
+						tablegroup text unique not null)''')
+			print("metatable created")
+			self.conn.commit()
+			cur.close()
+
 	def _testtableexists(self, table):
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master where name="{}"
@@ -62,11 +61,14 @@ class DbHandler:
 			tablelist = cur.fetchall()
 			cur.close()
 			return tablelist
-		
-		cur.execute('''select tablename from metatable
-					where tablegroup={}'''.format(tablegroup))
-		tablelist = cur.fetchall()
-		cur.close()
+		try:	
+			cur.execute('''select tablename from metatable
+						where tablegroup={}'''.format(tablegroup))
+			tablelist = cur.fetchall()
+			cur.close()
+		except sqlite3.OperationalError:
+			tablelist = []
+			return tablelist
 
 		if tablelist.isalnum():
 			cur.execute('''select tablename from metatable 
@@ -75,7 +77,8 @@ class DbHandler:
 			cur.close()
 			return tablelist
 		else:
-			return
+			tablelist = []
+			return tablelist
 
 	def gettablename(self, name):
 		cur = self.conn.cursor()
