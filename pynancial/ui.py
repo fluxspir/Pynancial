@@ -51,8 +51,8 @@ class UserInteract:
 
 		tablelist = dbinteract.gettablelist(tablegroup)
 		message = "Which table do you want to use ?\n\
-		Most people will only need one table. If the table you want to\
-		use is not in the list, just write its name please.\n\n"
+Most people will only need one table. If the table you want to\
+use is not in the list, just write its name please.\n"
 		print(message)
 		self.printtablelist(tablelist)
 		tablename = self.askuser("Table number, or new table name, please :  ")
@@ -98,7 +98,7 @@ class TableGroupHandlerInteract:
 		after displaying to user tables known, ask to user to pick one.
 		returns the user's choice.
 		"""
-		print("searching in metatable for tablegroup {}\n".format(tablegroup))
+		print("searching in metatable for tablegroup {}".format(tablegroup))
 		tablelist = self.tablegrouphandler.gettablelist(tablegroup)
 		return tablelist
 

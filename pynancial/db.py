@@ -32,13 +32,12 @@ class DbHandler:
 			cur.close()
 
 	def _testtableexists(self, table):
-		print(table)
+		print("test if table {} exists".format(table) )
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master where name="{}"
 				'''.format(table))
 		tableexistresult = cur.fetchall()
 		cur.close()
-		print(tableexistresult)
 		for r in tableexistresult:
 			print(r)
 			if not r:
@@ -330,8 +329,7 @@ class ProviderDbHandler(DbHandler):
 
 	def _createtable(self):
 		cur = self.conn.cursor()
-		print("i'm in create table")
-		print(self.table)
+		print("i'm in create provider table function")
 		try:
 			cur.execute('''create table {} (
 					name text unique not null,
@@ -431,6 +429,7 @@ class ProviderDbHandler(DbHandler):
 		# add providername into Symbol database
 		self.dbsymbol = SymbolDbHandler(self.db_path, self.symboltable, \
 										self.table)
+		print("tuple of providernames : {} ".format(tuple(providernames)))
 		symboladd = self.dbsymbol._insertnewprovider(tuple(providernames))
 		if symboladd:
 			message = "provider(s) {} where already in symboldatabase {}\n\
@@ -535,16 +534,15 @@ class SymbolDbHandler(DbHandler):
 
 	def _createtable(self, providertable):
 		cur = self.conn.cursor()
-		try:
-			cur.execute('''create table {} (
-					provider text unique not null,
-					foreign key(provider) references {}(name)
-					'''.format(self.table, providertable))
-			self.conn.commit()
-			cur.close()
-		except sqlite3.OperationalError:
-			print("Table of symbols {} already exists".format(self.table))
-			pass
+#		try:
+		cur.execute('''create table {} (
+				provider text unique not null,
+				foreign key(provider) references {}(name)
+				'''.format(self.table, providertable))
+		self.conn.commit()
+		cur.close()
+#		except sqlite3.OperationalError:
+#			print("Table of symbols {} already exists".format(self.table))
 
 	def _insertnewprovider(self, providernames):
 		""" 
@@ -559,8 +557,7 @@ class SymbolDbHandler(DbHandler):
 				self.conn.commit()
 				cur.close()
 			except sqlite3.OperationalError:
-				self._createtable(self.providertable)
-				self._insertnewprovider(providernames)
+				self._createtable(providername)
 			except sqlite3.IntegrityError:
 				providerrefused.append(providername)
 		return providerrefused
