@@ -55,6 +55,9 @@ class DbHandler:
 			return message
 
 	def gettableslist(self, tablegroup=""):
+		""" 
+		return tablelist : list of tablenames  [ name1, name2, ]
+		"""
 		cur = self.conn.cursor()
 		if not tablegroup:
 			cur.execute('''select tablename from metatable''')
@@ -81,6 +84,10 @@ class DbHandler:
 			return tablelist
 
 	def gettablename(self, name):
+		"""
+		return tablename if table is recognize by metatable
+		False otherwise
+		"""
 		cur = self.conn.cursor()
 		cur.execute('''select tablegroup from metatable
 							where tablename={} '''.format(tablename))

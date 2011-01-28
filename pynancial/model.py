@@ -27,23 +27,33 @@ class TableGroupHandler:
 	def __init__(self, db_path):
 		self.db_path = db_path
 
-	def gettablelist(self, tablegroup=""):
+	def _gettablelist(self, tablegroup=""):
 		""" 
-		return a tuple with name of each known table in the 
+		return tablelist : a list of tuples to assignate 
+			[	(number  ,  tablename) , ]
+		
 		"""
 		tablelist = []
 		dbhandler = db.DbHandler(self.db_path)
 		tablesindb = dbhandler.gettableslist(tablegroup)
-		i = 1
-		for t in tablesindb:
-			tablelist.append((i, t))
-			i = i + 1
-
+		if tablesindb:
+			i = 1
+			for t in tablesindb:
+				tablelist.append((i, t))
+				i += 1
 		return tablelist
 
+	def printtablelist(tablelist):
+		""" print the table list :
+				1   table_1
+				2	table_2
+		"""
+		for t in tablelist:
+			print(" {} : {}".format(t[0], t[1]))
+		
 	def verifytableexists(self, tablename):
 		""" 
-		apparently never called :/
+		return tablename if tablename in metatable, false otherwise
 		"""
 		dbhandler = db.DBHandler(db_path)
 		tableindb = dbhandler.gettablename(tablename)
@@ -52,8 +62,22 @@ class TableGroupHandler:
 		else:
 			return
 
+	def choosetable(self, tablegroup=""):
+		""" 
+		after displaying to user tables known, ask to user to pick one.
+		returns the user's choice.
+		"""
+		print("searching in metatable for tablegroup {}\n".format(tablegroup))
+		tablelist = self.gettablelist(tablegroup)
+		message = "Which table do you want to use ?\n\
+		Most people will only need one table. If the table you want to\
+		use is not in the list, just write its name please.\n\n"
+		self.printtablelist(tablelist)
+		tablename = askuser("Table number, or new table name, please :  ")
+		testtablename(tablename)
+		return tablename
 
-class ProviderHandler:
+class ProviderHandler(TableGroupHandler):
 	"""
 
 	METHODS
