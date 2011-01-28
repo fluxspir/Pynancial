@@ -380,11 +380,11 @@ class ProviderDbHandler(DbHandler):
 		"""
 		self.providerinfos = providerinfos
 		self.symboltable = symboltable
-		self.formattable = formattable
 
 		providernames = []
-		def testinput(self):
-			for chunk in self.providerinfos:
+		def testproviderinfos(self):
+			print("testinput good")
+			for chunk in providerinfos:
 				if not chunk[0].isalnum():
 					print("provider name {} must be alphanumeric please\n\
 					".format(chunk[0]))
@@ -404,7 +404,7 @@ class ProviderDbHandler(DbHandler):
 				chunk[0].append(providernames)
 			return providernames
 		
-		providernames = self.testinput()
+		providernames = testproviderinfos()
 		if not providernames:
 			message = "Please correct wrongly_written values\n"
 			return message

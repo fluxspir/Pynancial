@@ -22,7 +22,7 @@ if len(sys.argv) < 2:
 db_path = sys.argv[1]
 
 while True:
-	addprovider()
+	addprovider(db_path)
 	print("new try to add")
 
 while True:

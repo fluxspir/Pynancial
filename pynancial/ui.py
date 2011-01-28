@@ -31,16 +31,16 @@ class UserInteract:
 		response = userinteract.raw_input(message)
 		return response
 
-    def _printtablelist(self, tablelist):
-        """ 
+	def printtablelist(self, tablelist):
+		""" 
 		print the table list :
-                1   table_1
-                2   table_2
+				1   table_1
+				2   table_2
 		from tablelist [ ( 1, table_1 ), ... ]
 		be careful : 1 = tablelist[0]
-        """
-        for t in tablelist:
-            print(" {} : {}".format(t[0], t[1]))
+		"""
+		for t in tablelist:
+			print(" {} : {}".format(t[0], t[1]))
 
 	def choosetable(self, db_path, tablegroup=""):
 		"""
@@ -49,13 +49,12 @@ class UserInteract:
 		"""
 		dbinteract = TableGroupHandlerInteract(db_path)
 
-		print("searching in metatable for tablegroup {}\n".format(tablegroup))
 		tablelist = dbinteract.gettablelist(tablegroup)
 		message = "Which table do you want to use ?\n\
 		Most people will only need one table. If the table you want to\
 		use is not in the list, just write its name please.\n\n"
 		print(message)
-		self._printtablelist(tablelist)
+		self.printtablelist(tablelist)
 		tablename = self.askuser("Table number, or new table name, please :  ")
 		dbinteract._testtablename(tablename)
 		return tablename
@@ -66,8 +65,8 @@ class TableGroupHandlerInteract:
 	Interact avec model.py
 
 	"""
-	def __init__(self, db_path)
-		self.db_path = dbpath
+	def __init__(self, db_path):
+		self.db_path = db_path
 		self.tablegrouphandler = model.TableGroupHandler(db_path)
 
 	def _testtablename(self, tablename):
@@ -103,17 +102,16 @@ class TableGroupHandlerInteract:
 		tablelist = self.tablegrouphandler.gettablelist(tablegroup)
 		return tablelist
 
-def addprovider():
+def addprovider(db_path):
 	""" 
 	
 	"""
 	usrint = UserInteract()
+	providerinfos = []
 	def getproviderinfos():
 		"""
 		tablelist = [ ( number(start at 1) , tablename ) ]
 		"""
-		providerinfos = []
-
 		def interactuser():
 			name = usrint.askuser("provider short name ; ex : yahoo")
 			baseurl = usrint.askuser("baseurl for your provider")
@@ -130,22 +128,12 @@ def addprovider():
 		return providerinfos
 
 	print("adding new provider")
-	print("select symbol's tables")
+	print("select provider's table")
 	providertable = usrint.choosetable("provider")
+	print("select symbol's table")
 	symboltable = usrint.choosetable("symbol")
-	providerhandler = model.ProviderHandler(providertable)
+	providerhandler = model.ProviderHandler(db_path, providertable)
 	providerhandler.addnewprovider(providerinfos, symboltable)
-
-###	symboltables = dbinteract.gettablesnames("symbol")
-	message = "Which table do you want to use ?\n\
-	If the table you want to use is not in the list, just write its name\
-	please\n\n"
-	print(message)
-	usrint.printtablelist(symboltables)
-	table
-
-#	providerhandler.gethandlerfromtables()
-#	provider.addnewprovider(providerinfos, symboltable)
 
 def addstock():
 	""" """
