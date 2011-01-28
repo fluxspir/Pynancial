@@ -429,8 +429,7 @@ class ProviderDbHandler(DbHandler):
 		# add providername into Symbol database
 		self.dbsymbol = SymbolDbHandler(self.db_path, self.symboltable, \
 										self.table)
-		print("tuple of providernames : {} ".format(tuple(providernames)))
-		symboladd = self.dbsymbol._insertnewprovider(tuple(providernames))
+		symboladd = self.dbsymbol.insertnewprovider(tuple(providernames))
 		if symboladd:
 			message = "provider(s) {} where already in symboldatabase {}\n\
 			".format(providernames, self.symboltable)
@@ -544,16 +543,18 @@ class SymbolDbHandler(DbHandler):
 #		except sqlite3.OperationalError:
 #			print("Table of symbols {} already exists".format(self.table))
 
-	def _insertnewprovider(self, providernames):
+	def insertnewprovider(self, providernames):
 		""" 
 		providernames = ( "provider1", "provider2", )
 		"""
 		cur = self.conn.cursor()
 		providerrefused = []
 		for providername in providernames:
+			print(tuple(providername))
+			quit()
 			try:
 				cur.execute('''insert into {} ("provider") values (?)
-					'''.format(self.table), providername)
+					'''.format(self.table), tuple(providername))
 				self.conn.commit()
 				cur.close()
 			except sqlite3.OperationalError:
