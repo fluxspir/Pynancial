@@ -21,9 +21,9 @@ class UserInteract:
 	Interact with user
 	
 	"""
-	def __init__(self, user=""):
+	def __init__(self, db_path, user=""):
 		""" """
-		pass
+		self.user = user
 
 	def askuser(self, message):
 		""" """
@@ -106,7 +106,7 @@ def addprovider(db_path):
 	""" 
 	
 	"""
-	usrint = UserInteract()
+	usrint = UserInteract(db_path)
 	def getproviderinfos():
 		"""
 		tablelist = [ ( number(start at 1) , tablename ) ]
@@ -115,8 +115,8 @@ def addprovider(db_path):
 		def interactuser():
 			name = usrint.askuser("provider short name ; ex : yahoo	: ")
 			baseurl = usrint.askuser("baseurl for your provider		: ")
-			preformat = usrint.askuser("url part that introduce queryformat :")
-			presymbol = usrint.askuser("url part that introduce symbols	:	")
+			preformat = usrint.askuser("url part that introduce queryformat	: ")
+			presymbol = usrint.askuser("url part that introduce symbols	: ")
 			providerinfo = ( name, baseurl, preformat, presymbol )
 			providerinfos.append(providerinfo)
 			addprvd = usrint.askuser("add an other provider ? y/n :	")
@@ -127,12 +127,12 @@ def addprovider(db_path):
 		providerinfos = interactuser()
 		return providerinfos
 
-	providerinfos = getproviderinfos()
-	print("adding new provider")
+	print("adding new provider\n")
 	print("select provider's table")
-	providertable = usrint.choosetable("provider")
+	providertable = usrint.choosetable(db_path, "provider")
+	providerinfos = getproviderinfos()
 	print("select symbol's table")
-	symboltable = usrint.choosetable("symbol")
+	symboltable = usrint.choosetable(db_path, "symbol")
 	providerhandler = model.ProviderHandler(db_path, providertable)
 	providerhandler.addnewprovider(providerinfos, symboltable)
 
