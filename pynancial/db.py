@@ -13,11 +13,15 @@ import sqlite3
 
 class DbHandler:
 	"""
+
+	
+
 	"""
 	def __init__(self, db_path):
 		self.db_path = db_path
 		self.conn = sqlite3.connect(db_path)
 		
+
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master
 									where name="metatable"''')
@@ -41,8 +45,7 @@ class DbHandler:
 		for r in tableexistresult:
 			print(r)
 			if not r:
-				print(r)
-				print("about to create table")
+				print("about to create table {}".format(table))
 				self._createtable()
 
 	def _addmetatable(self, metadata):
@@ -52,7 +55,7 @@ class DbHandler:
 					values (?,?) ''', metadata)
 			self.conn.commit()
 			cur.close()
-			return
+			return 
 		except IntegrityError:
 			message = "Error while adding new table values {} in metatable\n\
 					".format(metadata)
@@ -115,6 +118,7 @@ class StockDBHandler(DbHandler):
 
 	"""
 	def __init__(self, db_path, table):
+		""" """
 		DbHandler.__init__(self, db_path)
 		self.db_path = db_path
 		self.table = table
@@ -239,7 +243,7 @@ class IndexDbHandler(DbHandler):
 					'''.format(self.table))
 			self.conn.commit()
 			cur.close()
-			self._addmetatable(metadata)
+			self._addmetatable(self.metadata)
 		except sqlite3.OperationalError:
 			print("table {} already exists".format(self.table))
 
@@ -326,10 +330,10 @@ class ProviderDbHandler(DbHandler):
 		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "provider"
+		self.metadata = (self.table, self.tablegroup)
 
 	def _createtable(self):
 		cur = self.conn.cursor()
-		print("i'm in create provider table function")
 		try:
 			cur.execute('''create table {} (
 					name text unique not null,
@@ -338,6 +342,7 @@ class ProviderDbHandler(DbHandler):
 					presymbol text )'''.format(self.table))
 			self.conn.commit()
 			cur.close()
+			self._addmetatable(self.metadata)
 		except sqlite3.OperationalError:
 			print("table {} already exists".format(self.table))
 
@@ -509,12 +514,18 @@ class SymbolDbHandler(DbHandler):
 
 	"""
 	def __init__(self, db_path, table, providertable=""):
+		"""
+		Auto created database when first access by DbProviderHandler.
+		"""
 		DbHandler.__init__(self, db_path)
 		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "symbol"
+		self.metadata = (self.table, self.tablegroup)
+		
 		self.providertable = providertable
 		symboltableexists = self._testtableexists()
+		
 		if not symboltableexists:
 			if providertable:
 				self._createtable(self.providertable)
@@ -533,15 +544,16 @@ class SymbolDbHandler(DbHandler):
 
 	def _createtable(self, providertable):
 		cur = self.conn.cursor()
-#		try:
-		cur.execute('''create table {} (
-				provider text unique not null,
-				foreign key(provider) references {}(name))
-				'''.format(self.table, providertable))
-		self.conn.commit()
-		cur.close()
-#		except sqlite3.OperationalError:
-#			print("Table of symbols {} already exists".format(self.table))
+		try:
+			cur.execute('''create table {} (
+					provider text unique not null,
+					foreign key(provider) references {}(name))
+					'''.format(self.table, providertable))
+			self.conn.commit()
+			cur.close()
+			self._addmetatable(self.metadata)
+		except sqlite3.OperationalError:
+			print("Table of symbols {} already exists".format(self.table))
 
 	def insertnewprovider(self, providernames):
 		""" 
@@ -550,16 +562,14 @@ class SymbolDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		providerrefused = []
 		for providername in providernames:
-			print(tuple(providername))
-			quit()
 			try:
 				cur.execute('''insert into {} ("provider") values (?)
-					'''.format(self.table), tuple(providername))
+					'''.format(self.table), (providername,) )
 				self.conn.commit()
 				cur.close()
 			except sqlite3.OperationalError:
 				self._createtable(providername)
-				self._insertnewprovider(providernames)
+				self.insertnewprovider(providernames)
 			except sqlite3.IntegrityError:
 				providerrefused.append(providername)
 		return providerrefused
@@ -598,6 +608,7 @@ class FormatDbHandler(DbHandler):
 		self.db_path = db_path
 		self.table = formattable
 		self.tablegroup = "format"
+		self.metadata = (self.table, self.tablegroup)
 		formattableexists = self._testtableexists(self.table)
 
 	def _createtable(self):
@@ -614,6 +625,7 @@ class FormatDbHandler(DbHandler):
 					explicitname text not null)'''.format(self.table))
 			self.conn.commit()
 			cur.close()
+			self._addmetatable(self.metadata)	
 		except sqlite3.OperationalError:
 			print("the table {} already exists".format(self.table))
 			
