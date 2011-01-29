@@ -48,12 +48,12 @@ class UserInteract:
 	    returns the user's choice.
 		"""
 		dbinteract = TableGroupHandlerInteract(db_path)
-
+		print("tablegroup = {}".format(tablegroup))
 		tablelist = dbinteract.gettablelist(tablegroup)
 		print(tablelist)
 		message = "Which table do you want to use ?\n\
 Most people will only need one table. If the table you want to \
-use is not in the list, just write its name please.\n"
+use is not in the list, just write its name please."
 		print(message)
 		self.printtablelist(tablelist)
 		tablename = self.askuser("Table number, or new table name, please :  ")
@@ -86,7 +86,7 @@ class TableGroupHandlerInteract:
 			except IndexError:
 				message = "Please use alpha numeric for table name"
 				print(message)
-				addprovider()
+				addprovider(self.dbpath)
 		elif tablename.isalnum():
 			pass
 		else:
@@ -108,6 +108,7 @@ def addprovider(db_path):
 	
 	"""
 	usrint = UserInteract(db_path)
+
 	def getproviderinfos():
 		"""
 		tablelist = [ ( number(start at 1) , tablename ) ]

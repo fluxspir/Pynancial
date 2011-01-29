@@ -24,13 +24,13 @@ class DbHandler:
 
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master
-									where name="metatable"''')
+									where name="metatable" ''')
 		metatableresult = cur.fetchall()
 		if not metatableresult:
 			cur = self.conn.cursor()
 			cur.execute('''create table metatable (
 						tablename text unique not null,
-						tablegroup text unique not null)''')
+						tablegroup text unique not null) ''')
 			print("metatable created")
 			self.conn.commit()
 			cur.close()
@@ -71,22 +71,13 @@ class DbHandler:
 			tablelist = cur.fetchall()
 			cur.close()
 			return tablelist
-		try:	
+		try:
 			cur.execute('''select tablename from metatable
-						where tablegroup={}'''.format(tablegroup))
+						where tablegroup="{}" '''.format(tablegroup))
 			tablelist = cur.fetchall()
 			cur.close()
+			return tablelist
 		except sqlite3.OperationalError:
-			tablelist = []
-			return tablelist
-
-		if tablelist.isalnum():
-			cur.execute('''select tablename from metatable 
-						where tablegroup={} '''.format(tablegroup))
-			tablelist = cur.fetchall()
-			cur.close()
-			return tablelist
-		else:
 			tablelist = []
 			return tablelist
 
@@ -97,7 +88,7 @@ class DbHandler:
 		"""
 		cur = self.conn.cursor()
 		cur.execute('''select tablegroup from metatable
-							where tablename={} '''.format(tablename))
+							where tablename="{}" '''.format(tablename))
 		tablename = cur.fetchall()
 		cur.close()
 		return tablename
@@ -535,7 +526,7 @@ class SymbolDbHandler(DbHandler):
 
 	def _testtableexists(self):
 		cur = self.conn.cursor()
-		cur.execute('''select name from sqlite_master where name='{}'
+		cur.execute('''select name from sqlite_master where name="{}"
 				'''.format(self.providertable))
 		testinmetatable = cur.fetchall()
 		cur.close()
