@@ -39,7 +39,7 @@ class TableGroupHandler:
 		if tablesindb:
 			i = 1
 			for t in tablesindb:
-				tablelist.append((i, t))
+				tablelist.append((i, t[0]))
 				i += 1
 		return tablelist
 

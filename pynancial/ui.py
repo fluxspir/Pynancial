@@ -14,6 +14,7 @@
 import code
 import sys
 import pynancial.model as model
+import pdb
 
 class UserInteract:
 	"""
@@ -86,7 +87,7 @@ class TableGroupHandlerInteract:
 			except IndexError:
 				message = "Please use alpha numeric for table name"
 				print(message)
-				addprovider(self.dbpath)
+				addprovider(self.db_path)
 		elif userchoice.isalnum():
 			return userchoice
 		else:
