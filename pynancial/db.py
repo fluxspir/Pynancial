@@ -10,6 +10,7 @@
 
 """
 import sqlite3
+import pdb
 
 class DbHandler:
 	"""
@@ -333,11 +334,9 @@ class ProviderDbHandler(DbHandler):
 			self.conn.commit()
 			cur.close()
 			self._addmetatable(self.metadata)
-			print("cool")
-			quit()
 		except sqlite3.OperationalError:
 			print("table {} already exists".format(self.table))
-
+	
 	def _alterwithnewformat(self, formatnames):
 		""" formatnames = ( name1, name2, names3, )"""
 		cur = self.conn.cursor()
