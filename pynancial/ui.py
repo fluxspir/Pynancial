@@ -40,7 +40,7 @@ class UserInteract:
 		be careful : 1 = tablelist[0]
 		"""
 		for t in tablelist:
-			print(" {} : {}".format(t[0], t[1]))
+			print(" {} : 	{}".format(t[0], t[1]))
 
 	def choosetable(self, db_path, tablegroup=""):
 		"""
@@ -50,14 +50,13 @@ class UserInteract:
 		dbinteract = TableGroupHandlerInteract(db_path)
 		print("tablegroup = {}".format(tablegroup))
 		tablelist = dbinteract.gettablelist(tablegroup)
-		print(tablelist)
 		message = "Which table do you want to use ?\n\
 Most people will only need one table. If the table you want to \
 use is not in the list, just write its name please."
 		print(message)
 		self.printtablelist(tablelist)
-		tablename = self.askuser("Table number, or new table name, please :  ")
-		dbinteract._testtablename(tablename)
+		userchoice = self.askuser("Table number, or new table name, please : ")
+		tablename = dbinteract._testtablename(userchoice, tablelist)
 		return tablename
 
 class TableGroupHandlerInteract:
@@ -70,29 +69,30 @@ class TableGroupHandlerInteract:
 		self.db_path = db_path
 		self.tablegrouphandler = model.TableGroupHandler(db_path)
 
-	def _testtablename(self, tablename):
+	def _testtablename(self, userchoice, tablelist):
 		""" 
-		the tablename the user decided may be :
+		the userchoice the user decided may be :
 			* a number   : means that user wants to use a already known table
 			* a name : without spaces, exotic characters (...) ; 
 		function test that, and return the tablename chosen.
 		"""
-		if not tablename:
-			addprovider()
-		elif tablename.isdigit():
-			i = int(tablename)
+		if not userchoice:
+			addprovider(self.db_path)
+		elif userchoice.isdigit():
+			i = int(userchoice)
 			try:
 				tablename = tablelist[i-1][1]
+				return tablename
 			except IndexError:
 				message = "Please use alpha numeric for table name"
 				print(message)
 				addprovider(self.dbpath)
-		elif tablename.isalnum():
-			pass
+		elif userchoice.isalnum():
+			return userchoice
 		else:
 			message = "Please use alpha numeric for table name"
 			print(message)
-			addprovider()
+			addprovider(self.db_path)
 
 	def gettablelist(self, tablegroup):
 		""" 
@@ -123,6 +123,7 @@ def addprovider(db_path):
 			providerinfos.append(providerinfo)
 			addprvd = usrint.askuser("add an other provider ? y/n :	")
 			if addprvd == "y":
+				print("\n")
 				interactuser()
 			return providerinfos
 

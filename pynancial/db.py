@@ -36,7 +36,6 @@ class DbHandler:
 			cur.close()
 
 	def _testtableexists(self, table):
-		print("test if table {} exists".format(table) )
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master where name="{}"
 				'''.format(table))
@@ -56,7 +55,7 @@ class DbHandler:
 			self.conn.commit()
 			cur.close()
 			return 
-		except IntegrityError:
+		except sqlite3.IntegrityError:
 			message = "Error while adding new table values {} in metatable\n\
 					".format(metadata)
 			return message
@@ -334,6 +333,8 @@ class ProviderDbHandler(DbHandler):
 			self.conn.commit()
 			cur.close()
 			self._addmetatable(self.metadata)
+			print("cool")
+			quit()
 		except sqlite3.OperationalError:
 			print("table {} already exists".format(self.table))
 
@@ -356,7 +357,6 @@ class ProviderDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		providerrefused = []
 		for providerinfo in self.providerinfos:
-			print(providerinfo[0])
 			try:
 				cur.execute('''insert into {} ("name", "baseurl", "preformat",
 						"presymbol") values (?,?,?,?)
@@ -423,8 +423,11 @@ class ProviderDbHandler(DbHandler):
 			return message
 
 		# add providername into Symbol database
+		print("arrive here")
+		quit()
 		self.dbsymbol = SymbolDbHandler(self.db_path, self.symboltable, \
 										self.table)
+		print("to remove : l428 providernames {}".format(providernames))
 		symboladd = self.dbsymbol.insertnewprovider(tuple(providernames))
 		if symboladd:
 			message = "provider(s) {} where already in symboldatabase {}\n\
@@ -515,6 +518,7 @@ class SymbolDbHandler(DbHandler):
 		self.metadata = (self.table, self.tablegroup)
 		
 		self.providertable = providertable
+		print("check symbol")
 		symboltableexists = self._testtableexists()
 		
 		if not symboltableexists:
