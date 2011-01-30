@@ -25,6 +25,7 @@ class UserInteract:
 	def __init__(self, db_path, user=""):
 		""" """
 		self.user = user
+		self.db_path = db_path
 
 	def askuser(self, message):
 		""" """
@@ -41,21 +42,35 @@ class UserInteract:
 		be careful : 1 = tablelist[0]
 		"""
 		for t in tablelist:
-			print(" {} : 	{}".format(t[0], t[1]))
+			print(" {} : 	{}".format((int(t[0]) + 1), t[1]))
 
-	def choosetable(self, db_path, tablegroup=""):
+	def choosetablegroup(self, message=""):
+		"""
+		after displaying to user tables groups known, ast to user to pick one.
+		return userchoice
+		"""
+		dbinteract = TableGroupHandlerInteract(self.db_path)
+		tablegrouplist = dbinteract.gettablegroups()
+		if message:
+			print(message)
+		if tablegrouplist:
+			self.printtablelist(tablegrouplist)
+		userchoice = self.askuser("Pick a table group please : ")
+		##TODO test if userchoice is valid
+		return userchoice
+
+	def choosetable(self, tablegroup="", message=""):
 		"""
 		after displaying to user tables known, ask to user to pick one.
 	    returns the user's choice.
 		"""
-		dbinteract = TableGroupHandlerInteract(db_path)
+		dbinteract = TableGroupHandlerInteract(self.db_path)
 		print("tablegroup = {}".format(tablegroup))
 		tablelist = dbinteract.gettablelist(tablegroup)
-		message = "Which table do you want to use ?\n\
-Most people will only need one table. If the table you want to \
-use is not in the list, just write its name please."
-		print(message)
-		self.printtablelist(tablelist)
+		if message:
+			print(message)
+		if tablelist:
+			self.printtablelist(tablelist)
 		userchoice = self.askuser("Table number, or new table name, please : ")
 		tablename = dbinteract._testtablename(userchoice, tablelist)
 		return tablename
@@ -80,9 +95,9 @@ class TableGroupHandlerInteract:
 		if not userchoice:
 			addprovider(self.db_path)
 		elif userchoice.isdigit():
-			i = int(userchoice)
+			i = int(userchoice) - 1
 			try:
-				tablename = tablelist[i-1][1]
+				tablename = tablelist[i][1]
 				return tablename
 			except IndexError:
 				message = "Please use alpha numeric for table name"
@@ -95,6 +110,13 @@ class TableGroupHandlerInteract:
 			print(message)
 			addprovider(self.db_path)
 
+	def gettablegroups(self):
+		""" 
+		Print all kind of table group we can find in the database
+		"""
+		tablegrouplist = self.tablegrouphandler.gettablegrouplist()
+		return tablegrouplist
+
 	def gettablelist(self, tablegroup):
 		""" 
 		after displaying to user tables known, ask to user to pick one.
@@ -103,6 +125,9 @@ class TableGroupHandlerInteract:
 		print("searching in metatable for tablegroup {}".format(tablegroup))
 		tablelist = self.tablegrouphandler.gettablelist(tablegroup)
 		return tablelist
+
+class DbNavigate():
+	pass
 
 def addprovider(db_path):
 	""" 
@@ -118,8 +143,8 @@ def addprovider(db_path):
 		def interactuser():
 			name = usrint.askuser("provider short name ; ex : yahoo	: ")
 			baseurl = usrint.askuser("baseurl for your provider		: ")
-			preformat = usrint.askuser("url part that introduce queryformat	: ")
-			presymbol = usrint.askuser("url part that introduce symbols	: ")
+			preformat = usrint.askuser("url part introducing queryformat	: ")
+			presymbol = usrint.askuser("url part introducing symbol		: ")
 			providerinfo = ( name, baseurl, preformat, presymbol )
 			providerinfos.append(providerinfo)
 			addprvd = usrint.askuser("add an other provider ? y/n :	")
@@ -131,13 +156,19 @@ def addprovider(db_path):
 		providerinfos = interactuser()
 		return providerinfos
 
-	print("adding new provider\n")
-	print("select provider's table")
-	providertable = usrint.choosetable(db_path, "provider")
+	print("adding new PROVIDER\n")
+	print("select PROVIDER's table")
+	message = "Which provider table do you want to use ?\n\
+Most people will only need one provider's table. If you want to create a new \
+table, just write its name please."
+	providertable = usrint.choosetable(db_path, "provider", message)
 	providerinfos = getproviderinfos()
-	print("select symbol's table")
+	print("select SYMBOL's table")
+	message = "Which SYMBOL table do you want to use ?\n\
+Most people will only need one symbol's table. If you want to create a new \
+table, just write its name please."
 	symboltable = usrint.choosetable(db_path, "symbol")
-	providerhandler = model.ProviderHandler(db_path, providertable)
+	providerhandler = model.ProviderHandler(db_path, providertable, message)
 	providerhandler.addnewprovider(providerinfos, symboltable)
 
 def addstock():
@@ -157,6 +188,19 @@ def addformat():
 
 	def getformatinfos():
 		""" """
+
+def selectstuff(db_path):
+	""" 
+	select table from metatable
+
+	"""
+	usrint = UserInteract(db_path)
+
+	message = ("Please select what kind of tables you want to navigate \
+into")
+	usrint.choosetablegroup(message)
+	
+#	usrint.choosetable(db_path, "", message)
 
 
 def quit():

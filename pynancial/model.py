@@ -10,6 +10,7 @@
 
 """
 import pynancial.db as db
+import pdb
 
 class TableGroupHandler:
 	"""
@@ -27,6 +28,30 @@ class TableGroupHandler:
 	def __init__(self, db_path):
 		self.db_path = db_path
 
+	def gettablegrouplist(self):
+		""" 
+		return tablegrouplist : list tuples which assignate
+		tablegrouplist = [ (number , tablegroup), ]
+		"""
+		tablegrouplist = []
+		dbhandler = db.DbHandler(self.db_path)
+		groupsavailable = dbhandler.gettablegrouplist()
+		if groupsavailable:
+			i = 0 
+			for t in groupsavailable:
+				if not tablegrouplist:
+					tablegrouplist.append((i, t[0]))
+					i += 1
+				else:
+					n = 0
+					for tablegroup in tablegrouplist[n]:
+						pdb.set_trace()
+						if t[0] not in tablegroup[1]:
+							tablegrouplist.append((i, t[0]))
+							i += 1
+						n += 1
+		return tablegrouplist
+
 	def gettablelist(self, tablegroup=""):
 		""" 
 		return tablelist : a list of tuples to assignate 
@@ -37,10 +62,7 @@ class TableGroupHandler:
 		dbhandler = db.DbHandler(self.db_path)
 		tablesindb = dbhandler.gettableslist(tablegroup)
 		if tablesindb:
-			i = 1
-			for t in tablesindb:
-				tablelist.append((i, t[0]))
-				i += 1
+			i = 0
 		return tablelist
 
 	def verifytableexists(self, tablename):
@@ -51,7 +73,6 @@ class TableGroupHandler:
 		tableindb = dbhandler.gettablename(tablename)
 		if tableindb:
 			return tableindb
-		else:
 			return
 
 class ProviderHandler(TableGroupHandler):

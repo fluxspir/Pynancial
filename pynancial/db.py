@@ -59,6 +59,17 @@ class DbHandler:
 					".format(metadata)
 			return message
 
+	def gettablegrouplist(self):
+		"""
+		return tablegrouplist : list of group availables :
+			[ "provider", "stock", "symbol", ]
+		"""
+		cur = self.conn.cursor()
+		cur.execute('''select tablegroup from metatable''')
+		tablegrouplist = cur.fetchall()
+		cur.close()
+		return tablegrouplist
+
 	def gettableslist(self, tablegroup=""):
 		""" 
 		return tablelist : list of tablenames  [ name1, name2, ]
