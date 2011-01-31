@@ -41,7 +41,7 @@ try:
 			if int(response) == 1:
 				addprovider(db_path)
 			elif int(response) == 2:
-				addstock()
+				addstock(db_path)
 			elif int(response) == 3:
 				addindex()
 			elif int(response) == 4:

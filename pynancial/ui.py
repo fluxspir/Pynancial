@@ -76,20 +76,19 @@ class UserInteract:
 		tablename = dbinteract._testtablename(userchoice, tablelist)
 		return tablename
 
-	def choosefromcollum(self, table, collum="", message=""):
+	def choosefromcollum(self, tablegroup, table, collum="", message=""):
 		"""
 		after displaying to user 
 		"""
 		if not collum:
 			collum = "*"
-		dbinteract = TableHandlerInteract(self.db_path, table)
+		dbinteract = TableHandlerInteract(self.db_path, tablegroup, table)
 		if message:
 			print(message)
 		collumresponse = dbinteract.getsomething(collum)
-		print(response)
-		quit()
-#		token = dbinteract.
+		print(collumresponse)
 		print("todo")
+		quit()
 
 class TableGroupHandlerInteract:
 	""" 
@@ -142,23 +141,24 @@ class TableGroupHandlerInteract:
 		tablelist = self.tablegrouphandler.gettablelist(tablegroup)
 		return tablelist
 
-class TableHandlerInteract():
+class TableHandlerInteract:
 	""" """
 	def __init__(self, db_path, tablegroup, table):
 		self.table = table
+		pdb.set_trace()
 		if tablegroup == "provider":
-			self.tablehandler = model.ProviderHandler(self.table)
-		if self.tablegroup == "symbol":
-			self.tablehandler = model.SymbolHandler(self.table)
-		if self.tablegroup == "stock":
-			self.tablehandler = model.StockHandler(self.table)
-		if self.tablegroup == "index":
-			self.tablehandler = model.IndexHandler(self.table)
+			self.tablehandler = model.ProviderHandler(self.db_path, self.table)
+		elif tablegroup == "symbol":
+			self.tablehandler = model.SymbolHandler(self.db_path, self.table)
+		elif tablegroup == "stock":
+			self.tablehandler = model.StockHandler(self.db_path, self.table)
+		elif tablegroup == "index":
+			self.tablehandler = model.IndexHandler(self.db_path, self.table)
 		else:
 			print("no tablegroup told, exit")
 			quit()
 
-	def dataavailable(self, table):
+	def dataavailable(self):
 		""" 
 		list of collums from tables, for user to choose whatever he needs
 		"""
@@ -179,7 +179,8 @@ class Provider(TableHandlerInteract):
 		if not table:
 			table = self.table()
 		self.table = table
-		TableHandlerInteract.__init__(self.db_path, self.tablegroup,self.table)
+		TableHandlerInteract.__init__(self, self.db_path, self.tablegroup, \
+										self.table)
 		if not name:
 			name = self.name()
 		self.name = name
@@ -200,7 +201,8 @@ class Provider(TableHandlerInteract):
 		return baseurl
 
 	def presymbol(self):
-		presymbol = self.providerhandler.getsomething("presymbol", self.name)
+		presymbol = self.providerhandler.getsomething("presymbol", "name", \
+																self.name)
 		return presymbol
 
 	def preformat(self):
@@ -212,9 +214,13 @@ class Provider(TableHandlerInteract):
 	def formattable(self):
 		pass
 
-	def selectfromprovider(self):
+	def selectfromprovider(self, something=""):
 		""" """
-		pass
+		##TODO TOCHANGE
+		url = self.baseurl()
+		selectedstuff = (self.name, url)
+		return selectedstuff
+		
 
 class Symbol():
 	def possessioncode(self):
@@ -290,9 +296,45 @@ table, just write its name please."
 	providerhandler = model.ProviderHandler(db_path, providertable, message)
 	providerhandler.addnewprovider(providerinfos, symboltable)
 
-def addstock():
+def addstock(db_path):
 	""" """
-	pass
+	usrint = UserInteract(db_path)
+
+	def getstockinfos():
+		"""
+		tablelist = [ ( number(start at 1) , tablename ) ]
+		"""
+		stockinfos = []
+		def interactuser():
+			code = usrint.askuser("Stock International Code (USxxxxxxxxxx) : ")
+			name = usrint.askuser("Compagny name	: ")
+			location = usrint.askuser("Stock Exchange	: ")
+			stockinfo = (code, name, location)
+			stockinfos.append(stockinfo)
+			addother = usrint.askuser("add an other stock ? y/n :	")
+			if addother == "y":
+				print("\n")
+				interactuser()
+			return stockinfos
+
+		stockinfos = interactuser()
+		return stockinfos
+
+	print("adding new STOCK\n")
+	print("select STOCK table")
+	message = "Which stock table do you want to use ?\n\
+Some people will use several stock's table. \
+You could that way create stocks tables by Type (environment, healcare,...), \
+locations, whateever you want.\n\
+If you want to create a new table, just write its name please."
+	stocktable = usrint.choosetable("stock", message)
+	stockinfos = getstockinfos()
+	stockhandler = model.StockHandler(db_path, stocktable)
+	message = "Which SYMBOL table do you want to use for table {} ?"\
+	.format(stocktable)
+	symboltable = usrint.choosetable("symbol", message)
+	stockhandler.addstock(stockinfos, symboltable)
+
 
 def addindex():
 	""" """
@@ -319,7 +361,8 @@ into")
 	tablegroup = usrint.choosetablegroup(message)
 
 	if tablegroup == "provider":
-		provider = Provider(db_path, "", "")
+		provider = Provider(db_path)
+		print("yo")
 		stuffselected = provider.selectfromprovider()
 		print("stuff selected : {}".format(stuffselected))
 		return stuffselected

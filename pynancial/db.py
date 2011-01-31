@@ -115,7 +115,7 @@ class DbHandler:
 			cur.close()
 		return response
 
-class StockDBHandler(DbHandler):
+class StockDbHandler(DbHandler):
 	"""
 	DATABASE NAME
 		Stock
@@ -182,8 +182,8 @@ class StockDBHandler(DbHandler):
 		"""
 		self.stockinfos = stockinfos
 		self.symboltable = symboltable
-		self.dbsymbol = SymbolDbHandler(self.symboltable)
-		symbolexist = self.dbsymbol._testtable()
+		self.dbsymbol = SymbolDbHandler(self.db_path, self.symboltable)
+		symbolexist = self.dbsymbol._testtableexists()
 
 		if not symbolexist:
 			message = "Please add at least one  provider before trying to add\
@@ -527,24 +527,21 @@ class SymbolDbHandler(DbHandler):
 
 	"""
 	def __init__(self, db_path, table, providertable=""):
-		"""
-		Auto created database when first access by DbProviderHandler.
-		"""
 		DbHandler.__init__(self, db_path)
 		self.db_path = db_path
 		self.table = table
 		self.tablegroup = "symbol"
 		self.metadata = (self.table, self.tablegroup)
-		
+
 		self.providertable = providertable
 		symboltableexists = self._testtableexists()
-		
+
 		if not symboltableexists:
 			if providertable:
 				self._createtable(self.providertable)
 			else:
 				print("Please give the providertable name you want \
-				new symboltables {} be reliated.\n".format(self.table))
+new symboltables {} be reliated.\n".format(self.table))
 
 	def _testtableexists(self):
 		cur = self.conn.cursor()
@@ -559,8 +556,8 @@ class SymbolDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		try:
 			cur.execute('''create table {} (
-					provider text unique not null,
-					foreign key(provider) references {}(name))
+						provider text unique not null,
+						foreign key(provider) references {}(name))
 					'''.format(self.table, providertable))
 			self.conn.commit()
 			cur.close()
@@ -570,14 +567,14 @@ class SymbolDbHandler(DbHandler):
 
 	def insertnewprovider(self, providernames):
 		""" 
-		providernames = ( "provider1", "provider2", )
+			providernames = ( "provider1", "provider2", )
 		"""
 		cur = self.conn.cursor()
 		providerrefused = []
 		for providername in providernames:
 			try:
 				cur.execute('''insert into {} ("provider") values (?)
-					'''.format(self.table), (providername,) )
+					  '''.format(self.table), (providername,) )
 				self.conn.commit()
 				cur.close()
 			except sqlite3.OperationalError:
@@ -585,35 +582,35 @@ class SymbolDbHandler(DbHandler):
 				self.insertnewprovider(providernames)
 			except sqlite3.IntegrityError:
 				providerrefused.append(providername)
-		return providerrefused
+				return providerrefused
 
 	def _altertable(self, tokencodes):
 		"""
-		locationtable = ( location1, "NYSE", Paris, )
-		tokentable = DBStock or DBIndex, or DBTrackers...
+			locationtable = ( location1, "NYSE", Paris, )
+			tokentable = DBStock or DBIndex, or DBTrackers...
 		"""
 		cur = self.conn.cursor()
 		tokenrefused = []
 		for tokencode in tokencodes:
 			try:
 				cur.execute('''alter table {} add {} text
-						'''.format(self.table, tokencode))
+					  '''.format(self.table, tokencode))
 				self.conn.commit()
 				cur.close()
 			except sqlite3.OperationalError:
 				tokenrefused.append(tokencode)
-		return tokenrefused
+				return tokenrefused
 
 class FormatDbHandler(DbHandler):
 	"""
 
 	DATABASE NAME
-			Format_xx
+	Format_xx
 
 	DATABASE STRUCTURE
-			* (rowid)
-			* provider_alter_collum_name
-			* format name human readable
+		* (rowid)
+		* provider_alter_collum_name
+		* format name human readable
 			
 	"""
 	def __init__(self, db_path, formattable):

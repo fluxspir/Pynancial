@@ -162,9 +162,9 @@ class StockHandler(TableGroupHandler):
 	"""
 
 	def __init__(self, db_path, table):
-		db_path = self.db_path
+		self.db_path = db_path
 		self.table = table
-		self.dbstock = DBStock(self.db, self.table)
+		self.dbstock = db.StockDbHandler(self.db_path, self.table)
 		
 	def addstock(self, stockinfos, symboltable):
 		addmessage = self.dbstock.addnewstock(stockinfos, symboltable)
