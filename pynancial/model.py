@@ -33,6 +33,12 @@ class TableGroupHandler:
 		return tablegrouplist : list tuples which assignate
 		tablegrouplist = [ (number , tablegroup), ]
 		"""
+		def checkalreadyknowngroup(tablegroup, tablegrouplist):
+			for tgp in tablegrouplist:
+				if t[0] in tgp[1]:
+					return
+			return True
+		
 		tablegrouplist = []
 		dbhandler = db.DbHandler(self.db_path)
 		groupsavailable = dbhandler.gettablegrouplist()
@@ -43,13 +49,10 @@ class TableGroupHandler:
 					tablegrouplist.append((i, t[0]))
 					i += 1
 				else:
-					n = 0
-					for tablegroup in tablegrouplist[n]:
-						pdb.set_trace()
-						if t[0] not in tablegroup[1]:
-							tablegrouplist.append((i, t[0]))
-							i += 1
-						n += 1
+					check = checkalreadyknowngroup(t, tablegrouplist)
+					if check:
+						tablegrouplist.append((i, t[0]))
+						i += 1
 		return tablegrouplist
 
 	def gettablelist(self, tablegroup=""):
@@ -63,6 +66,9 @@ class TableGroupHandler:
 		tablesindb = dbhandler.gettableslist(tablegroup)
 		if tablesindb:
 			i = 0
+			for t in tablesindb:
+				tablelist.append((i, t[0]))
+				i += 1
 		return tablelist
 
 	def verifytableexists(self, tablename):
@@ -94,8 +100,14 @@ class ProviderHandler(TableGroupHandler):
 		self.dbprovider = db.ProviderDbHandler(self.db_path, self.table)
 
 	def addnewprovider(self, providerinfos, symboltable):
+		""" """
 		prvdmessage = self.dbprovider.addprovider(providerinfos, symboltable)
 		print(prvdmessage)
+
+	def getsomething(self, collum="", where=""):
+		""" """
+		response = self.dbprovider.getsomething(collum, where)
+		return response
 
 	def addsymbol(self, providername, symboltable, symbolsfortokens):
 		"""
@@ -125,6 +137,10 @@ class ProviderHandler(TableGroupHandler):
 		addformattypemessage  = self.addformattype.addformat(self.formattable,\
 													formatinfos)
 		return addformattypemessage
+
+#	def select(self, collum="", where=""):
+#		""" """
+#		pass
 
 
 class StockHandler(TableGroupHandler):

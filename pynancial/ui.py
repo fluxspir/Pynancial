@@ -56,8 +56,9 @@ class UserInteract:
 		if tablegrouplist:
 			self.printtablelist(tablegrouplist)
 		userchoice = self.askuser("Pick a table group please : ")
+		tablegroup = dbinteract._testtablename(userchoice, tablegrouplist)
 		##TODO test if userchoice is valid
-		return userchoice
+		return tablegroup
 
 	def choosetable(self, tablegroup="", message=""):
 		"""
@@ -74,6 +75,21 @@ class UserInteract:
 		userchoice = self.askuser("Table number, or new table name, please : ")
 		tablename = dbinteract._testtablename(userchoice, tablelist)
 		return tablename
+
+	def choosefromcollum(self, table, collum="", message=""):
+		"""
+		after displaying to user 
+		"""
+		if not collum:
+			collum = "*"
+		dbinteract = TableHandlerInteract(self.db_path, table)
+		if message:
+			print(message)
+		collumresponse = dbinteract.getsomething(collum)
+		print(response)
+		quit()
+#		token = dbinteract.
+		print("todo")
 
 class TableGroupHandlerInteract:
 	""" 
@@ -126,8 +142,110 @@ class TableGroupHandlerInteract:
 		tablelist = self.tablegrouphandler.gettablelist(tablegroup)
 		return tablelist
 
-class DbNavigate():
-	pass
+class TableHandlerInteract():
+	""" """
+	def __init__(self, db_path, tablegroup, table):
+		self.table = table
+		if tablegroup == "provider":
+			self.tablehandler = model.ProviderHandler(self.table)
+		if self.tablegroup == "symbol":
+			self.tablehandler = model.SymbolHandler(self.table)
+		if self.tablegroup == "stock":
+			self.tablehandler = model.StockHandler(self.table)
+		if self.tablegroup == "index":
+			self.tablehandler = model.IndexHandler(self.table)
+		else:
+			print("no tablegroup told, exit")
+			quit()
+
+	def dataavailable(self, table):
+		""" 
+		list of collums from tables, for user to choose whatever he needs
+		"""
+		pass
+
+	def getsomething(self, collum="", where="", pattern=""):
+		""" """
+		response = self.tablehandler.getsomething(collum, where, pattern)
+		return response
+
+
+class Provider(TableHandlerInteract):
+	""" """
+	def __init__(self, db_path, table="", name=""):
+		self.db_path = db_path
+		self.tablegroup = "provider"
+		self.ui = UserInteract(self.db_path)
+		if not table:
+			table = self.table()
+		self.table = table
+		TableHandlerInteract.__init__(self.db_path, self.tablegroup,self.table)
+		if not name:
+			name = self.name()
+		self.name = name
+
+	def table(self):
+		message = ("Please select the table you want to navigate into")
+		tablename = self.ui.choosetable(self.tablegroup, message)
+		return tablename
+
+	def name(self):
+		""" select name from providertable"""
+		message = ("Please select the provider you want to use")
+		name = self.ui.choosefromcollum(self.table, "name", message)
+		return name
+		
+	def baseurl(self):
+		baseurl = self.tablehandler.getsomething("baseurl", "name", self.name)
+		return baseurl
+
+	def presymbol(self):
+		presymbol = self.providerhandler.getsomething("presymbol", self.name)
+		return presymbol
+
+	def preformat(self):
+		message = "Select format"
+		print(message)
+		print("TODO")
+		return preformat
+
+	def formattable(self):
+		pass
+
+	def selectfromprovider(self):
+		""" """
+		pass
+
+class Symbol():
+	def possessioncode(self):
+		pass
+
+class Possession(Symbol):
+	""" """
+	def code(self):
+		pass
+	def name(self):
+		pass
+	def location(self):
+		pass
+
+class Stock(Possession):
+	""" """
+
+class Index(Possession):
+	""" """
+	def valuesindexed(self):
+		pass
+
+class UrlBuilder():
+	""" """
+	def __init__(self):
+		pass
+	def possession(self):
+		pass
+	def provider(self):
+		pass
+
 
 def addprovider(db_path):
 	""" 
@@ -143,7 +261,8 @@ def addprovider(db_path):
 		def interactuser():
 			name = usrint.askuser("provider short name ; ex : yahoo	: ")
 			baseurl = usrint.askuser("baseurl for your provider		: ")
-			preformat = usrint.askuser("url part introducing queryformat	: ")
+			preformat = usrint.askuser("url part introducing queryformat	\
+: ")
 			presymbol = usrint.askuser("url part introducing symbol		: ")
 			providerinfo = ( name, baseurl, preformat, presymbol )
 			providerinfos.append(providerinfo)
@@ -191,18 +310,30 @@ def addformat():
 
 def selectstuff(db_path):
 	""" 
-	select table from metatable
-
+	select anything from tables
+	return the stuff selected
 	"""
 	usrint = UserInteract(db_path)
-
 	message = ("Please select what kind of tables you want to navigate \
 into")
-	usrint.choosetablegroup(message)
+	tablegroup = usrint.choosetablegroup(message)
+
+	if tablegroup == "provider":
+		provider = Provider(db_path, "", "")
+		stuffselected = provider.selectfromprovider()
+		print("stuff selected : {}".format(stuffselected))
+		return stuffselected
+
+	elif tablegroup == "symbol":
+		pass
+	elif tablegroup == "stock":
+		pass
+	elif tablegroup == "index":
+		pass
+	else:
+		return
+	return stuffselected
 	
-#	usrint.choosetable(db_path, "", message)
-
-
 def quit():
 	""" """
 	sys.exit(0)

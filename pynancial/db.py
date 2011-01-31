@@ -102,6 +102,19 @@ class DbHandler:
 		cur.close()
 		return tablename
 
+	def getsomething(self, collum="", pattern="", pattern2=""):
+		"""
+		return response = [ ( , ,), ] 
+		"""
+		cur = self.conn.cursor()
+		if not collum:
+			collum = "*"
+		if not pattern:
+			cur.execute('''select {} from {}'''.format(collum, self.table))
+			response = cur.fetchall()
+			cur.close()
+		return response
+
 class StockDBHandler(DbHandler):
 	"""
 	DATABASE NAME
