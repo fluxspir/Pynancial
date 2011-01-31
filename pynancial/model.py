@@ -104,9 +104,9 @@ class ProviderHandler(TableGroupHandler):
 		prvdmessage = self.dbprovider.addprovider(providerinfos, symboltable)
 		print(prvdmessage)
 
-	def getsomething(self, collum="", where=""):
+	def getsomething(self, collumns="", where="", name=""):
 		""" """
-		response = self.dbprovider.getsomething(collum, where)
+		response = self.dbprovider.getsomething(collumns, where, name)
 		return response
 
 	def addsymbol(self, providername, symboltable, symbolsfortokens):

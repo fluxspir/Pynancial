@@ -102,15 +102,35 @@ class DbHandler:
 		cur.close()
 		return tablename
 
-	def getsomething(self, collum="", pattern="", pattern2=""):
+	def getsomething(self, collumns="", where="" , pattern=""):
 		"""
+		collum = ( collumn1, collumn2, )
+		where = collumn
+		pattern = ( 
 		return response = [ ( , ,), ] 
 		"""
+		col = ""
 		cur = self.conn.cursor()
-		if not collum:
-			collum = "*"
-		if not pattern:
-			cur.execute('''select {} from {}'''.format(collum, self.table))
+		if not collumns:
+			col = "*"
+		else:
+			if len(collumns) > 1:
+				for c in collumns:
+					if not col:
+						col = str(c)
+					else:
+						col = col + ", " + str(c)
+			else:
+				col = collumns[0]
+
+		if not where:
+			cur.execute('''select {} from {}'''.format(col, self.table))
+			response = cur.fetchall()
+			cur.close()
+		else:
+			##TODO not sure about this synthax
+			cur.execute('''select {} from {} where {}="{}" '''
+						.format(collum, self.table, where, pattern))
 			response = cur.fetchall()
 			cur.close()
 		return response

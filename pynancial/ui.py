@@ -76,20 +76,6 @@ class UserInteract:
 		tablename = dbinteract._testtablename(userchoice, tablelist)
 		return tablename
 
-	def choosefromcollum(self, tablegroup, table, collum="", message=""):
-		"""
-		after displaying to user 
-		"""
-		if not collum:
-			collum = "*"
-		dbinteract = TableHandlerInteract(self.db_path, tablegroup, table)
-		if message:
-			print(message)
-		collumresponse = dbinteract.getsomething(collum)
-		print(collumresponse)
-		print("todo")
-		quit()
-
 class TableGroupHandlerInteract:
 	""" 
 	
@@ -143,20 +129,8 @@ class TableGroupHandlerInteract:
 
 class TableHandlerInteract:
 	""" """
-	def __init__(self, db_path, tablegroup, table):
-		self.table = table
-		pdb.set_trace()
-		if tablegroup == "provider":
-			self.tablehandler = model.ProviderHandler(self.db_path, self.table)
-		elif tablegroup == "symbol":
-			self.tablehandler = model.SymbolHandler(self.db_path, self.table)
-		elif tablegroup == "stock":
-			self.tablehandler = model.StockHandler(self.db_path, self.table)
-		elif tablegroup == "index":
-			self.tablehandler = model.IndexHandler(self.db_path, self.table)
-		else:
-			print("no tablegroup told, exit")
-			quit()
+	def __init__(self, db_path):
+		pass
 
 	def dataavailable(self):
 		""" 
@@ -164,14 +138,39 @@ class TableHandlerInteract:
 		"""
 		pass
 
-	def getsomething(self, collum="", where="", pattern=""):
+	def choosefromcollum(self, collum="", message=""):
+		"""
+		after displaying to user 
+		"""
+		if not collum:
+			collum = "*"
+		if message:
+			print(message)
+		collumresponse = self.getsomething(collum)
+		print(collumresponse)
+		print("todo")
+		quit()
+
+
+	def getsomething(self, collumns="", where="", pattern=""):
 		""" """
-		response = self.tablehandler.getsomething(collum, where, pattern)
+		response = self.tablehandler.getsomething(collumns, where, pattern)
 		return response
 
 
 class Provider(TableHandlerInteract):
-	""" """
+	""" 
+
+	the provider table is the database table where our providers are.
+	the provider name is chosen by the user
+	the provider baseurl is the part of the url that never changes, beginning
+		with "http:// "
+	the provider presymbol is the url part that will introduce the symbol that 
+		represent the entity (stock...) we're looking for.
+	the provider preformat is the url part that will introduce the 
+		"formatquery" which tells the providers infos we want for symbol chosen
+
+	"""
 	def __init__(self, db_path, table="", name=""):
 		self.db_path = db_path
 		self.tablegroup = "provider"
@@ -179,8 +178,7 @@ class Provider(TableHandlerInteract):
 		if not table:
 			table = self.table()
 		self.table = table
-		TableHandlerInteract.__init__(self, self.db_path, self.tablegroup, \
-										self.table)
+		self.tablehandler = model.ProviderHandler(self.db_path, self.table)
 		if not name:
 			name = self.name()
 		self.name = name
@@ -193,16 +191,17 @@ class Provider(TableHandlerInteract):
 	def name(self):
 		""" select name from providertable"""
 		message = ("Please select the provider you want to use")
-		name = self.ui.choosefromcollum(self.table, "name", message)
+		name = self.choosefromcollum(("name",), message)
 		return name
 		
 	def baseurl(self):
-		baseurl = self.tablehandler.getsomething("baseurl", "name", self.name)
+		baseurl = self.tablehandler.getsomething(("baseurl",), "name", \
+												self.name)
 		return baseurl
 
 	def presymbol(self):
-		presymbol = self.providerhandler.getsomething("presymbol", "name", \
-																self.name)
+		presymbol = self.providerhandler.getsomething(("presymbol",) , \
+														"name", self.name)
 		return presymbol
 
 	def preformat(self):
