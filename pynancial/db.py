@@ -130,7 +130,7 @@ class DbHandler:
 		else:
 			##TODO not sure about this synthax
 			cur.execute('''select {} from {} where {}="{}" '''
-						.format(collum, self.table, where, pattern))
+						.format(col, self.table, where, pattern))
 			response = cur.fetchall()
 			cur.close()
 		return response

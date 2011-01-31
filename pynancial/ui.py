@@ -33,7 +33,7 @@ class UserInteract:
 		response = userinteract.raw_input(message)
 		return response
 
-	def printtablelist(self, tablelist):
+	def printtuple(self, tupletoprint):
 		""" 
 		print the table list :
 				1   table_1
@@ -41,7 +41,7 @@ class UserInteract:
 		from tablelist [ ( 1, table_1 ), ... ]
 		be careful : 1 = tablelist[0]
 		"""
-		for t in tablelist:
+		for t in tupletoprint:
 			print(" {} : 	{}".format((int(t[0]) + 1), t[1]))
 
 	def choosetablegroup(self, message=""):
@@ -54,7 +54,7 @@ class UserInteract:
 		if message:
 			print(message)
 		if tablegrouplist:
-			self.printtablelist(tablegrouplist)
+			self.printtuple(tablegrouplist)
 		userchoice = self.askuser("Pick a table group please : ")
 		tablegroup = dbinteract._testtablename(userchoice, tablegrouplist)
 		##TODO test if userchoice is valid
@@ -71,7 +71,7 @@ class UserInteract:
 		if message:
 			print(message)
 		if tablelist:
-			self.printtablelist(tablelist)
+			self.printtuple(tablelist)
 		userchoice = self.askuser("Table number, or new table name, please : ")
 		tablename = dbinteract._testtablename(userchoice, tablelist)
 		return tablename
@@ -130,7 +130,44 @@ class TableGroupHandlerInteract:
 class TableHandlerInteract:
 	""" """
 	def __init__(self, db_path):
-		pass
+		self.db_path = db_path
+		self.ui = UserInteract(self.db_path)
+
+	def _orderresponse(self, unorderedlist):
+		""" 
+		response = [ ("x"), ("y"), ]
+		assign num to each tuple;
+		return = ( ( 1: "x"),(2:"y"), ]
+		"""
+		response = []
+		i = 0
+		for t in unorderedlist:
+			response.append((i, t[0]))
+			i += 1
+		return tuple(response)
+
+	def _testuserchoice(self, userchoice, possibilities):
+		""" 
+		look if userchoice is valid
+		"""
+		if not userchoice:
+			message =  "error : user didn't pick nothing"
+			print(message)
+			return
+		elif userchoice.isdigit():
+			i = int(userchoice) - 1
+			try:
+				definitivechoice = possibilities[i][1]
+				return definitivechoice
+			except IndexError:
+				message = "Please pick a number that exist"
+				return
+		elif userchoice.isalnum():
+			for choice in possibilities[1]:
+				if userchoice == choice:
+					return choice
+				else:
+					return
 
 	def dataavailable(self):
 		""" 
@@ -138,22 +175,32 @@ class TableHandlerInteract:
 		"""
 		pass
 
-	def choosefromcollum(self, collum="", message=""):
+	def choosefromcollumn(self, collumn="", message=""):
 		"""
 		after displaying to user 
 		"""
-		if not collum:
-			collum = "*"
+		if not collumn:
+			collumn = "*"
 		if message:
 			print(message)
-		collumresponse = self.getsomething(collum)
-		print(collumresponse)
-		print("todo")
-		quit()
-
+		collumnresponse = self.getsomething(collumn)
+		orderedcol = self._orderresponse(collumnresponse)
+#		if message:
+#			print(message)
+		if orderedcol:
+			self.ui.printtuple(orderedcol)
+		userchoice = self.ui.askuser(message)
+		testchoice = self._testuserchoice(userchoice, orderedcol)
+		if not testchoice:
+			self.choosefromcollum(collumn, message)
+		else:
+			choice = testchoice
+		return choice
 
 	def getsomething(self, collumns="", where="", pattern=""):
-		""" """
+		""" 
+		response = 
+		"""
 		response = self.tablehandler.getsomething(collumns, where, pattern)
 		return response
 
@@ -190,8 +237,8 @@ class Provider(TableHandlerInteract):
 
 	def name(self):
 		""" select name from providertable"""
-		message = ("Please select the provider you want to use")
-		name = self.choosefromcollum(("name",), message)
+		message = ("Please select the provider you want to use	: ")
+		name = self.choosefromcollumn(("name",), message)
 		return name
 		
 	def baseurl(self):
@@ -361,7 +408,6 @@ into")
 
 	if tablegroup == "provider":
 		provider = Provider(db_path)
-		print("yo")
 		stuffselected = provider.selectfromprovider()
 		print("stuff selected : {}".format(stuffselected))
 		return stuffselected
