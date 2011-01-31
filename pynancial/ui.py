@@ -285,14 +285,14 @@ def addprovider(db_path):
 	message = "Which provider table do you want to use ?\n\
 Most people will only need one provider's table. If you want to create a new \
 table, just write its name please."
-	providertable = usrint.choosetable(db_path, "provider", message)
+	providertable = usrint.choosetable("provider", message)
 	providerinfos = getproviderinfos()
 	print("select SYMBOL's table")
 	message = "Which SYMBOL table do you want to use ?\n\
 Most people will only need one symbol's table. If you want to create a new \
 table, just write its name please."
-	symboltable = usrint.choosetable(db_path, "symbol")
-	providerhandler = model.ProviderHandler(db_path, providertable, message)
+	symboltable = usrint.choosetable("symbol", message)
+	providerhandler = model.ProviderHandler(db_path, providertable)
 	providerhandler.addnewprovider(providerinfos, symboltable)
 
 def addstock(db_path):
