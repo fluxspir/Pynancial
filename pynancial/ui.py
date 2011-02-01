@@ -337,7 +337,13 @@ class Value(TableHandlerInteract):
 		if not table:
 			table = self.table()
 		self.table = table
-
+		if self.tablegroup == "stock":
+			self.tablehandler = model.StockHandler(self.db_path, self.table)
+		elif self.tablegroup == "index":
+			self.tablehandler = model.IndexHandler(self.db_path, self.table)
+		else:
+			print("No tablegroup ; expect errors because no tablehandler \
+could be set.")
 
 	def table(self):
 		message = "Please select the table you want to navigate into"
@@ -397,7 +403,6 @@ class Stock(Value):
 		self.db_path = db_path
 		self.tablegroup = "stock"
 		Value.__init__(self, db_path, self.tablegroup, table)
-		self.tablehandler = model.StockHandler(self.db_path, self.table)
 		if not code:
 			if not name:
 				message = "Please select the stock you want to use : "
@@ -423,7 +428,6 @@ class Index(Value):
 		self.tablegroup = "index"
 		Value.__init__(self, db_path, self.tablegroup, table)
 		self.ui = UserInteract(self.db_path)
-		self.tablehandler = model.IndexHandler(self.db_path, self.table)
 		if not code:
 			if not name:
 				message = "Please select the index you want to use : "
