@@ -291,7 +291,7 @@ class Symbol(TableHandlerInteract):
 		""" Value.code() and .name()  ;  return (code , name)"""
 		value = Value(self.db_path)
 		valuecode = value.code()
-		valuename = value.name()
+		valuename = value.name(valuecode)
 		codename = ( valuecode, valuename)
 		return codename
 	
@@ -301,24 +301,29 @@ class Symbol(TableHandlerInteract):
 		providername = prvd.name
 		return providername
 		
-	def getsymbol(self):
+	def getsymbol(self, provider="", code=""):
 		"""
 		select _code() from tokentable 
 			where "providername"=(_provider)
 		return : symbol = ""
 		"""
-		codename = self.codename()
-		provider = self.provider()
-		symbols = self.getsomething((codename[0],), "provider", provider)
+		if not code:
+			codename = self.codename()
+			code = codename[0]
+		if not provider:
+			provider = self.provider()
+		symbols = self.getsomething((code,), "provider", provider)
 		symbol = symbols[0][0]
-		return (symbol)
+		return symbol
 
 	def getinfos(self):
 		provider = self.provider()
-		name = self.codename[1]
-		code = self.codename[0]
-		symbol = self.getsymbol()
-		pass
+		codename = self.codename()
+		name = codename[1]
+		code = codename[0]
+		symbol = self.getsymbol(provider, code)
+		infos = (("name", name), ("code", code), ("symbol", symbol))
+		return infos
 
 class Value(TableHandlerInteract):
 	""" 
@@ -607,11 +612,8 @@ into")
 
 	elif tablegroup == "symbol":
 		symbol = Symbol(db_path)
-		stuffselected = symbol.getsymbol()
-		if not stuffselected:
-			print("Void response")
-		else:
-			userprint(stuffselected)
+		stuffselected = symbol.getinfos()
+		userprint(stuffselected)
 		return stuffselected
 
 	elif tablegroup == "stock":
