@@ -28,7 +28,7 @@ class TableGroupHandler:
 	def __init__(self, db_path):
 		self.db_path = db_path
 
-	def gettablegrouplist(self):
+	def gettablegrouplist(self,):
 		""" 
 		return tablegrouplist : list tuples which assignate
 		tablegrouplist = [ (number , tablegroup), ]
@@ -165,9 +165,6 @@ class StockHandler(TableGroupHandler):
 		addmessage = self.dbstock.addnewstock(stockinfos, symboltable)
 		print(addmessage)
 
-	def getstockcode(self, pattern):
-		pass
-
 	def getsomething(self, collumns="", where="", name=""):
 		""" """
 		response = self.dbstock.getsomething(collumns, where, name)
@@ -187,17 +184,31 @@ class IndexHandler(TableGroupHandler):
 	def __init__(self, db_path, table):
 		self.db_path = db_path
 		self.table = table
-		self.dbindex = IndexDbHandler(self.db, self.table)
+		self.dbindex = IndexDbHandler(self.db_path, self.table)
 
 	def addindex(self, indexinfos, symboltable):
 		addmessage = self.dbindex.addnewindex(indexinfos, symboltable)
 		print(addmessage)
 
-	def getindexcode(self, pattern):
-		pass
-
-	def getsomething(self, collumns="", where="", name=""):
+	def getsomething(self, columns="", where="", name=""):
 		""" """
-		response = self.dbindex.getsomething(collumns, where, name)
+		response = self.dbindex.getsomething(columns, where, name)
 		return response
 
+class SymbolHandler(TableGroupHandler):
+	def __init__(self, db_path, table):
+		self.db_path = db_path
+		self.table = table
+		self.dbsymbol = db.SymbolDbHandler(self.db_path, self.table)
+
+	def addsymbol():
+		""" 
+		insert into symboltable (codecolumn,) values ( symbol, )
+		where "provider" = (name,)
+		"""
+		pass
+
+	def getsomething(self, columns="", where="", name=""):
+		""" """
+		response = self.dbsymbol.getsomething(columns, where, name)
+		return response

@@ -70,7 +70,7 @@ class DbHandler:
 		cur.close()
 		return tablegrouplist
 
-	def gettableslist(self, tablegroup=""):
+	def gettableslist(self, tablegroup=()):
 		""" 
 		return tablelist : list of tablenames  [ name1, name2, ]
 		"""
@@ -102,26 +102,26 @@ class DbHandler:
 		cur.close()
 		return tablename
 
-	def getsomething(self, collumns="", where="" , pattern=""):
+	def getsomething(self, columns="", where="" , pattern=""):
 		"""
-		collum = ( collumn1, collumn2, )
-		where = collumn
+		collum = ( column1, column2, )
+		where = column
 		pattern = ( 
 		return response = [ ( , ,), ] 
 		"""
 		col = ""
 		cur = self.conn.cursor()
-		if not collumns:
+		if not columns:
 			col = "*"
 		else:
-			if len(collumns) > 1:
-				for c in collumns:
+			if len(columns) > 1:
+				for c in columns:
 					if not col:
 						col = str(c)
 					else:
 						col = col + ", " + str(c)
 			else:
-				col = collumns[0]
+				col = columns[0]
 
 		if not where:
 			cur.execute('''select {} from {}'''.format(col, self.table))
@@ -607,6 +607,8 @@ new symboltables {} be reliated.\n".format(self.table))
 		"""
 			locationtable = ( location1, "NYSE", Paris, )
 			tokentable = DBStock or DBIndex, or DBTrackers...
+			return False ,  
+			otherwise, list of token that could not alter the table
 		"""
 		cur = self.conn.cursor()
 		tokenrefused = []

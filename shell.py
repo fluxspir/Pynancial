@@ -26,34 +26,37 @@ try:
 	while True:
 		userinteract = code.InteractiveConsole()
 		response = userinteract.raw_input("What do you want to do ?\n\
-	1 Extend database\n\
-	2 Find in database\n\
-	9 Quit\n")
-	# 3 Create URL\n\
+e : Extend database\n\
+f : Find in database\n\
+q : Quit\n")
+# 3 Create URL\n\
 
-		if int(response) == 1:
+		if response == "e":
 			response = userinteract.raw_input("What do you want to add ?\n\
-	1 provider\n\
-	2 stock\n\
-	3 index\n\
-	4 format\n")
+k : stock\t\tx : index\n\
+y : symbol\t\tp : provider\t\tf : format\n")
 
-			if int(response) == 1:
+			if response == "p":
 				addprovider(db_path)
-			elif int(response) == 2:
+			elif response == "k":
 				addstock(db_path)
-			elif int(response) == 3:
-				addindex()
-			elif int(response) == 4:
-				addformat()
+			elif response == "x":
+				addindex(db_path)
+			elif response == "y":
+				addsymbol(db_path)
+			elif response == "f":
+				addformat(db_path)
 			else:
 				pass
-		elif int(response) == 2:
+
+		elif response == "f":
 			selectstuff(db_path)
 
-		elif int(response) == 3:
+		elif response == "u":
+			""" build url"""
 			pass
-		elif int(response) == 9:
+
+		elif response == "q":
 			quit()
 		else:
 			print("select a valid number please")

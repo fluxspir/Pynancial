@@ -28,7 +28,7 @@ class UserInteract:
 		self.db_path = db_path
 
 	def askuser(self, message):
-		""" """
+		""" response = str("userinput") """
 		userinteract = code.InteractiveConsole()
 		response = userinteract.raw_input(message)
 		return response
@@ -162,7 +162,7 @@ class TableHandlerInteract:
 			except IndexError:
 				message = "Please pick a number that exist"
 				return
-		elif userchoice.isalnum() or userchoice.isspace():
+		elif userchoice.isprintable():
 			for choice in possibilities[1]:
 				if userchoice == choice:
 					return choice
@@ -171,33 +171,34 @@ class TableHandlerInteract:
 
 	def dataavailable(self):
 		""" 
-		list of collums from tables, for user to choose whatever he needs
+		list of colums from tables, for user to choose whatever he needs
 		"""
 		pass
 
-	def choosefromcollumn(self, collumn="", message="", where="", pattern=""):
+	def choosefromcolumn(self, column="", message="", where="", pattern=""):
 		"""
 		after displaying to user 
+		return "string"
 		"""
-		if not collumn:
-			collumn = "*"
-		collumnresponse = self.getsomething(collumn)
-		orderedcol = self._orderresponse(collumnresponse)
+		if not column:
+			column = "*"
+		columnresponse = self.getsomething(column)
+		orderedcol = self._orderresponse(columnresponse)
 		if orderedcol:
 			self.ui.printtuple(orderedcol)
 		userchoice = self.ui.askuser(message)
 		testchoice = self._testuserchoice(userchoice, orderedcol)
 		if not testchoice:
-			self.choosefromcollum(collumn, message)
+			self.choosefromcolumn(column, message)
 		else:
 			choice = testchoice
 		return choice
 
-	def getsomething(self, collumns="", where="", pattern=""):
+	def getsomething(self, columns="", where="", pattern=""):
 		""" 
-		response = 
+		response = [ ( ), (), ]
 		"""
-		response = self.tablehandler.getsomething(collumns, where, pattern)
+		response = self.tablehandler.getsomething(columns, where, pattern)
 		return response
 
 
@@ -235,7 +236,7 @@ class Provider(TableHandlerInteract):
 	def name(self):
 		""" select name from providertable"""
 		message = "Please select the provider you want to use	: "
-		name = self.choosefromcollumn(("name",), message)
+		name = self.choosefromcolumn(("name",), message)
 		return name
 		
 	def baseurl(self):
@@ -267,49 +268,76 @@ class Provider(TableHandlerInteract):
 		
 
 class Symbol(TableHandlerInteract):
-	def __init__(self, db_path, table=""):
+	def __init__(self, db_path, table="", provider="", valuecode=""):
 		self.db_path = db_path
+		self.tablegroup = "symbol"
 		self.ui = UserInteract(self.db_path)
 		if not table:
 			table = self.table()
 		self.table = table
+		self.tablehandler = model.SymbolHandler(self.db_path, self.table)
+			
 
 	def table(self):
 		message = "Please select the table you want to navigate into"
 		tablename = self.ui.choosetable(self.tablegroup, message)
 		return tablename
 
-	def _code(self):
-		""" Value.code() """
-		print("todo")
-		pass ##TODO
+	def codename(self):
+		""" Value.code() and .name()  ;  return (code , name)"""
+		value = Value(self.db_path)
+		valuecode = value.code()
+		valuename = value.name()
+		codename = ( valuecode, valuename)
+		return codename
 	
-	def _provider(self):
+	def provider(self):
 		""" Provider.name() """
-		print("todo")
-		pass ##TODO
-
+		prvd = Provider(self.db_path)
+		providername = prvd.name()
+		return providername
+		
 	def getsymbol(self):
 		"""
 		select _code() from tokentable 
 			where "name"=(_provider)
-		return symbol
+		return : symbol = (
 		"""
-		##TODO
+		codename = self.codename()
+		provider = self.provider()
+		symbols = self.getsomething(codename[0], "name", self.provider)
+		symbol = symbols[0][0]
+		return (symbol)
 
 	def getinfos(self):
-		location = self.location()
-		stuffselected = (self.code, self.name, location)
-		return stuffselected	
+		provider = self.provider
+		name = self.codename[1]
+		code = self.codename[0]
+		symbol = self.getsymbol()
+		pass
 
 class Value(TableHandlerInteract):
-	""" """
-	def __init__(self, db_path, table=""):
+	""" 
+	
+	Common informations that share chattels, as code, name, location.
+	Value may be "stock", "index", "futures", "...???"
+	
+	"""
+	def __init__(self, db_path, tablegroup ="", table=""):
 		self.db_path = db_path
 		self.ui = UserInteract(self.db_path)
+		if not tablegroup:
+			groupsavailable = ( (0, "stock"), (1, "index") )
+			message = "What kind of values you want to see symbols ?"
+			self.ui.printtuple(groupsavailable)
+			userchoice = self.ui.askuser(message)
+			dbinteract = TableGroupHandlerInteract(self.db_path)
+			tablegroup = dbinteract._testtablename(userchoice, groupsavailable)
+		self.tablegroup = tablegroup
 		if not table:
 			table = self.table()
 		self.table = table
+
 
 	def table(self):
 		message = "Please select the table you want to navigate into"
@@ -317,33 +345,41 @@ class Value(TableHandlerInteract):
 		return tablename
 
 
-	def code(self, name="",  message=""):
-		""" select code from the stock/index/... table
-		code = ( ("code1", "name1" ), ("code2", "name2") )
-		"""
+	def code(self, name="", message=""):
+		""" select code from the stock/index/... table"""
 		if not name:
-			code = self.tablehandler.choosefromcollumn(("code", ), message)
+			name = self.choosefromcolumn(("name", "code" ), message)
+			self.code(name)
 		else:
-			code = self.tablehandler.getsomething(("code",),"name", name)
-		return code[0][0]
+			getcode = self.tablehandler.getsomething(("code",),"name", name)
+			code = getcode[0][0]
+		return code
 		
 	def name(self, code="", message=""):
-		""" select name from value table """
+		""" 
+		select name from value table 
+		name = [ ( "name" ), ]
+		"""
 		if not code:
-			name = self.choosefromcollumn(("name",), message)
+			name = self.choosefromcolumn(("name",), message)
 		else:
-			name = self.tablehandler.getsomething(("name",), "code", code)
+			getname = self.tablehandler.getsomething(("name",), "code", code)
+			name = getname[0][0]
 		return name
 
 	def codename(self, message=""):
-		pass
+		code = self.code()
+		name = self.name()
+		codename (self.code, self.name)
+		return codename
 
 	def location(self, code="", message=""):
 		"""select location where "code" = code"""
 		if not code:
-			location = self.choosefromcollumn(("location",), message)
+			location = self.choosefromcolumn(("location",), message)
 		else:
-			location = self.getsomething(("location",), "code", code)
+			getlocation = self.getsomething(("location",), "code", code)
+			location = getlocation[0][0]
 		return location
 
 class Stock(Value):
@@ -360,7 +396,7 @@ class Stock(Value):
 	def __init__(self, db_path, table="", code="", name=""):
 		self.db_path = db_path
 		self.tablegroup = "stock"
-		Value.__init__(self, db_path, table)
+		Value.__init__(self, db_path, self.tablegroup, table)
 		self.tablehandler = model.StockHandler(self.db_path, self.table)
 		if not code:
 			if not name:
@@ -376,9 +412,8 @@ class Stock(Value):
 			self.code), ("name" self.name), ("location", self.location) )
 		"""
 		infos =( ("db_path", self.db_path), ("table", self.table ), ("code",\
-				self.code), ("name", self.name(self.code)[0][0]), \
-				("location", self.location(self.code)[0][0]) )
-
+				self.code), ("name", self.name(self.code)), \
+				("location", self.location(self.code)) )
 		return infos 
 
 class Index(Value):
@@ -386,7 +421,7 @@ class Index(Value):
 	def __init__(self, db_path, table="", code="", name=""):
 		self.db_puth = db_path
 		self.tablegroup = "index"
-		Value.__init__(self, db_path, table)
+		Value.__init__(self, db_path, self.tablegroup, table)
 		self.ui = UserInteract(self.db_path)
 		self.tablehandler = model.IndexHandler(self.db_path, self.table)
 		if not code:
@@ -501,6 +536,30 @@ def addindex():
 	""" """
 	pass
 
+def addsymbol(db_path, newsymbols=[]):
+	""" 
+	[ ( provider, value, symbol ), ]
+	"""
+	ursint = UserInteract(db_path)
+	if newsymbols:
+		pass
+
+	provider = Provider(db_path)
+	message = "To which kind of value will you add the symbol ? "
+	groups ("stock", "index")
+	tablegroup = usrint.choosetablegroup(message, groups)
+	if tablegroup == "stock":
+		value = Stock(db_path)
+	elif tablegroup == "index":
+		value = Index(db_path)
+	providername = provider.name()
+	valuecode = value.code()
+	valuename = value.name()
+	symbol = usrint.askuser("What is the {}' symbol for the value \
+{}	: ".format(providername, valuename))
+	##TODO
+##	symbolhandler = model.Symbol
+
 def addformat():
 	""" """
 	def gethandlerfromtables():
@@ -537,6 +596,9 @@ into")
 
 	elif tablegroup == "symbol":
 		symbol = Symbol(db_path)
+		stuffselected = symbol.getsymbol()
+		userprint(stuffselected)
+		return stuffselected
 
 	elif tablegroup == "stock":
 		stock = Stock(db_path)
@@ -547,6 +609,8 @@ into")
 	elif tablegroup == "index":
 		index = Index(db_path)
 		stuffselected = index.selectvalue()
+		userprint(stuffselected)
+		return stuffselected
 	else:
 		return
 	return stuffselected
