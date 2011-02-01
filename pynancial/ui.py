@@ -195,8 +195,12 @@ class TableHandlerInteract:
 		return choice
 
 	def getsomething(self, columns="", where="", pattern=""):
-		""" 
-		response = [ ( ), (), ]
+		"""
+		select columns from self.table where where=pattern
+		columns = ( "col1", "col2", )
+		where = "string"
+		pattern = (maybe string now) should be : ( pat1, pat2, )
+		response = [ (), (), ]
 		"""
 		response = self.tablehandler.getsomething(columns, where, pattern)
 		return response
@@ -294,23 +298,23 @@ class Symbol(TableHandlerInteract):
 	def provider(self):
 		""" Provider.name() """
 		prvd = Provider(self.db_path)
-		providername = prvd.name()
+		providername = prvd.name
 		return providername
 		
 	def getsymbol(self):
 		"""
 		select _code() from tokentable 
-			where "name"=(_provider)
-		return : symbol = (
+			where "providername"=(_provider)
+		return : symbol = ""
 		"""
 		codename = self.codename()
 		provider = self.provider()
-		symbols = self.getsomething(codename[0], "name", self.provider)
+		symbols = self.getsomething((codename[0],), "provider", provider)
 		symbol = symbols[0][0]
 		return (symbol)
 
 	def getinfos(self):
-		provider = self.provider
+		provider = self.provider()
 		name = self.codename[1]
 		code = self.codename[0]
 		symbol = self.getsymbol()
@@ -355,7 +359,7 @@ could be set.")
 		""" select code from the stock/index/... table"""
 		if not name:
 			name = self.choosefromcolumn(("name", "code" ), message)
-			self.code(name)
+			code = self.code(name)
 		else:
 			getcode = self.tablehandler.getsomething(("code",),"name", name)
 			code = getcode[0][0]
@@ -601,7 +605,10 @@ into")
 	elif tablegroup == "symbol":
 		symbol = Symbol(db_path)
 		stuffselected = symbol.getsymbol()
-		userprint(stuffselected)
+		if not stuffselected:
+			print("Void response")
+		else:
+			userprint(stuffselected)
 		return stuffselected
 
 	elif tablegroup == "stock":
