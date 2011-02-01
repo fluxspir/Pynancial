@@ -407,13 +407,16 @@ class Stock(Value):
 		self.db_path = db_path
 		self.tablegroup = "stock"
 		Value.__init__(self, db_path, self.tablegroup, table)
-		if not code:
-			if not name:
-				message = "Please select the stock you want to use : "
-				name = self.name( "" , message)
-				code = self.code(name)
-			code = self.code(name)
-		self.code = code
+#		if not code:
+#			if not name:
+#				message = "Please select the stock you want to use : "
+#				name = self.name( "" , message)
+#				code = self.code(name)
+#			code = self.code(name)
+		if code:
+			self.code = code
+		if name:
+			self.name = name
 
 	def getinfos(self):
 		"""
