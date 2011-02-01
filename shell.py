@@ -29,7 +29,7 @@ try:
 	1 Extend database\n\
 	2 Find in database\n\
 	9 Quit\n")
-	#        3 Create URL\n\
+	# 3 Create URL\n\
 
 		if int(response) == 1:
 			response = userinteract.raw_input("What do you want to add ?\n\

@@ -104,7 +104,7 @@ class TableGroupHandlerInteract:
 				message = "Please use alpha numeric for table name"
 				print(message)
 				addprovider(self.db_path)
-		elif userchoice.isalnum():
+		elif userchoice.isalnum() or userchoice.isspace():
 			return userchoice
 		else:
 			message = "Please use alpha numeric for table name"
@@ -162,7 +162,7 @@ class TableHandlerInteract:
 			except IndexError:
 				message = "Please pick a number that exist"
 				return
-		elif userchoice.isalnum():
+		elif userchoice.isalnum() or userchoice.isspace():
 			for choice in possibilities[1]:
 				if userchoice == choice:
 					return choice
@@ -175,18 +175,14 @@ class TableHandlerInteract:
 		"""
 		pass
 
-	def choosefromcollumn(self, collumn="", message=""):
+	def choosefromcollumn(self, collumn="", message="", where="", pattern=""):
 		"""
 		after displaying to user 
 		"""
 		if not collumn:
 			collumn = "*"
-		if message:
-			print(message)
 		collumnresponse = self.getsomething(collumn)
 		orderedcol = self._orderresponse(collumnresponse)
-#		if message:
-#			print(message)
 		if orderedcol:
 			self.ui.printtuple(orderedcol)
 		userchoice = self.ui.askuser(message)
@@ -228,65 +224,185 @@ class Provider(TableHandlerInteract):
 		self.tablehandler = model.ProviderHandler(self.db_path, self.table)
 		if not name:
 			name = self.name()
+		##TODO test if given name OK
 		self.name = name
 
 	def table(self):
-		message = ("Please select the table you want to navigate into")
+		message = "Please select the table you want to navigate into"
 		tablename = self.ui.choosetable(self.tablegroup, message)
 		return tablename
 
 	def name(self):
 		""" select name from providertable"""
-		message = ("Please select the provider you want to use	: ")
+		message = "Please select the provider you want to use	: "
 		name = self.choosefromcollumn(("name",), message)
 		return name
 		
 	def baseurl(self):
 		baseurl = self.tablehandler.getsomething(("baseurl",), "name", \
 												self.name)
-		return baseurl
+		return baseurl[0][0]
 
 	def presymbol(self):
-		presymbol = self.providerhandler.getsomething(("presymbol",) , \
+		presymbol = self.tablehandler.getsomething(("presymbol",) , \
 														"name", self.name)
-		return presymbol
+		return presymbol[0][0]
 
 	def preformat(self):
-		message = "Select format"
-		print(message)
-		print("TODO")
-		return preformat
+		preformat = self.tablehandler.getsomething(("preformat",) ,\
+														"name", self.name )
+		return preformat[0][0]
 
 	def formattable(self):
 		pass
 
-	def selectfromprovider(self, something=""):
+	def getinfos(self, something=""):
 		""" """
-		##TODO TOCHANGE
 		url = self.baseurl()
-		selectedstuff = (self.name, url)
+		preformat = self.preformat()
+		presymbol = self.presymbol()
+		selectedstuff = (("name", self.name),("baseurl", url), ("presymbol", \
+										presymbol), ("preformat", preformat ))
 		return selectedstuff
 		
 
-class Symbol():
-	def possessioncode(self):
+class Symbol(TableHandlerInteract):
+	def __init__(self, db_path, table=""):
+		self.db_path = db_path
+		self.ui = UserInteract(self.db_path)
+		if not table:
+			table = self.table()
+		self.table = table
+
+	def table(self):
+		message = "Please select the table you want to navigate into"
+		tablename = self.ui.choosetable(self.tablegroup, message)
+		return tablename
+
+	def _code(self):
+		""" Value.code() """
+		print("todo")
+		pass ##TODO
+	
+	def _provider(self):
+		""" Provider.name() """
+		print("todo")
+		pass ##TODO
+
+	def getsymbol(self):
+		"""
+		select _code() from tokentable 
+			where "name"=(_provider)
+		return symbol
+		"""
+		##TODO
+
+	def getinfos(self):
+		location = self.location()
+		stuffselected = (self.code, self.name, location)
+		return stuffselected	
+
+class Value(TableHandlerInteract):
+	""" """
+	def __init__(self, db_path, table=""):
+		self.db_path = db_path
+		self.ui = UserInteract(self.db_path)
+		if not table:
+			table = self.table()
+		self.table = table
+
+	def table(self):
+		message = "Please select the table you want to navigate into"
+		tablename = self.ui.choosetable(self.tablegroup, message)
+		return tablename
+
+
+	def code(self, name="",  message=""):
+		""" select code from the stock/index/... table
+		code = ( ("code1", "name1" ), ("code2", "name2") )
+		"""
+		if not name:
+			code = self.tablehandler.choosefromcollumn(("code", ), message)
+		else:
+			code = self.tablehandler.getsomething(("code",),"name", name)
+		return code[0][0]
+		
+	def name(self, code="", message=""):
+		""" select name from value table """
+		if not code:
+			name = self.choosefromcollumn(("name",), message)
+		else:
+			name = self.tablehandler.getsomething(("name",), "code", code)
+		return name
+
+	def codename(self, message=""):
 		pass
 
-class Possession(Symbol):
-	""" """
-	def code(self):
-		pass
-	def name(self):
-		pass
-	def location(self):
-		pass
+	def location(self, code="", message=""):
+		"""select location where "code" = code"""
+		if not code:
+			location = self.choosefromcollumn(("location",), message)
+		else:
+			location = self.getsomething(("location",), "code", code)
+		return location
 
-class Stock(Possession):
-	""" """
+class Stock(Value):
+	""" 
 
-class Index(Possession):
+	A stock belongs to the database.
+	It has a stock international code : FRxxxxxxxxxx (10 "x")
+	The stock name is at first choosen by the user.
+		An implementation could be to take the name of yahoo-format long_name
+	The stock location is the market place (stock exchange) where you may find
+		this stock (exemple : NYSE, NASDAQ, PARIS...)
+	
+	"""
+	def __init__(self, db_path, table="", code="", name=""):
+		self.db_path = db_path
+		self.tablegroup = "stock"
+		Value.__init__(self, db_path, table)
+		self.tablehandler = model.StockHandler(self.db_path, self.table)
+		if not code:
+			if not name:
+				message = "Please select the stock you want to use : "
+				name = self.name( "" , message)
+				code = self.code(name)
+			code = self.code(name)
+		self.code = code
+
+	def getinfos(self):
+		"""
+		infos =( ("db_path", self.db_path), ("table", self.table ),("code",\
+			self.code), ("name" self.name), ("location", self.location) )
+		"""
+		infos =( ("db_path", self.db_path), ("table", self.table ), ("code",\
+				self.code), ("name", self.name(self.code)[0][0]), \
+				("location", self.location(self.code)[0][0]) )
+
+		return infos 
+
+class Index(Value):
 	""" """
+	def __init__(self, db_path, table="", code="", name=""):
+		self.db_puth = db_path
+		self.tablegroup = "index"
+		Value.__init__(self, db_path, table)
+		self.ui = UserInteract(self.db_path)
+		self.tablehandler = model.IndexHandler(self.db_path, self.table)
+		if not code:
+			if not name:
+				message = "Please select the index you want to use : "
+				name = self.name( "" , message)
+				code = self.code(name)
+			code = self.code(name)
+		self.code = code
+
 	def valuesindexed(self):
+		""" 
+		return ( "stock1", "stock2", "stock3", ) 
+		needs a database
+		"""
+		#TODO
 		pass
 
 class UrlBuilder():
@@ -381,7 +497,6 @@ If you want to create a new table, just write its name please."
 	symboltable = usrint.choosetable("symbol", message)
 	stockhandler.addstock(stockinfos, symboltable)
 
-
 def addindex():
 	""" """
 	pass
@@ -406,18 +521,32 @@ def selectstuff(db_path):
 into")
 	tablegroup = usrint.choosetablegroup(message)
 
+	def userprint(stufftoprint):
+		""" 
+		print format of tuples ("name"  :  "value")
+		"""
+		for r in stufftoprint:
+			print("{}	:	{}".format(r[0], r[1]))
+		print("\n")
+
 	if tablegroup == "provider":
 		provider = Provider(db_path)
-		stuffselected = provider.selectfromprovider()
-		print("stuff selected : {}".format(stuffselected))
+		stuffselected = provider.getinfos()
+		userprint(stuffselected)
 		return stuffselected
 
 	elif tablegroup == "symbol":
-		pass
+		symbol = Symbol(db_path)
+
 	elif tablegroup == "stock":
-		pass
+		stock = Stock(db_path)
+		stuffselected = stock.getinfos()
+		userprint(stuffselected)
+		return stuffselected
+
 	elif tablegroup == "index":
-		pass
+		index = Index(db_path)
+		stuffselected = index.selectvalue()
 	else:
 		return
 	return stuffselected

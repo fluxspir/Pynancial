@@ -163,13 +163,13 @@ class StockDbHandler(DbHandler):
 		try:
 			cur.execute('''create table {} (
 						code text unique not null,
-						name text unique not null
-						location text)
+						name text unique not null,
+						location text )
 						'''.format(self.table))
 			self.conn.commit()
 			cur.close()
 			self._addmetatable(self.metadata)
-		except OperationalError:
+		except sqlite3.OperationalError:
 			print("Table {} already exists".format(self.table))
 
 	def _inserttable(self):
@@ -187,6 +187,8 @@ class StockDbHandler(DbHandler):
 						values(?,?,?) '''.format(self.table), stockinfo)
 				self.conn.commit()
 				cur.close()
+			except sqlite3.OperationalError:
+				self._createtable()
 			except sqlite3.IntegrityError:
 				tokenrefused.append(tokencode)
 		return tokenrefused
@@ -203,23 +205,21 @@ class StockDbHandler(DbHandler):
 		self.stockinfos = stockinfos
 		self.symboltable = symboltable
 		self.dbsymbol = SymbolDbHandler(self.db_path, self.symboltable)
-		symbolexist = self.dbsymbol._testtableexists()
+		symbolexist = self.dbsymbol._testsymboltableexists()
 
 		if not symbolexist:
 			message = "Please add at least one  provider before trying to add\
 			a stock\n"
 			return message
 
-		def test_input(self, test):
+		def test_input(test):
 			tokencodes = []
 			for chunk in stockinfos:
 				for token in chunk:
 					if not token:
 						print(" 3 values mandatory in {}\n".format(chunk))
 						return 
-					elif token.isalnum():
-						pass
-					else:
+					if not token.isprintable():
 						print("values must be alpha-numeric in {}\n\
 							".format(chunk))
 						return
@@ -554,8 +554,7 @@ class SymbolDbHandler(DbHandler):
 		self.metadata = (self.table, self.tablegroup)
 
 		self.providertable = providertable
-		symboltableexists = self._testtableexists()
-
+		symboltableexists = self._testsymboltableexists()
 		if not symboltableexists:
 			if providertable:
 				self._createtable(self.providertable)
@@ -563,10 +562,10 @@ class SymbolDbHandler(DbHandler):
 				print("Please give the providertable name you want \
 new symboltables {} be reliated.\n".format(self.table))
 
-	def _testtableexists(self):
+	def _testsymboltableexists(self):
 		cur = self.conn.cursor()
 		cur.execute('''select name from sqlite_master where name="{}"
-				'''.format(self.providertable))
+				'''.format(self.table))
 		testinmetatable = cur.fetchall()
 		cur.close()
 		for r in testinmetatable:

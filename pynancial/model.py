@@ -104,11 +104,6 @@ class ProviderHandler(TableGroupHandler):
 		prvdmessage = self.dbprovider.addprovider(providerinfos, symboltable)
 		print(prvdmessage)
 
-	def getsomething(self, collumns="", where="", name=""):
-		""" """
-		response = self.dbprovider.getsomething(collumns, where, name)
-		return response
-
 	def addsymbol(self, providername, symboltable, symbolsfortokens):
 		"""
 		add provider_symbols for tokens
@@ -138,10 +133,10 @@ class ProviderHandler(TableGroupHandler):
 													formatinfos)
 		return addformattypemessage
 
-#	def select(self, collum="", where=""):
-#		""" """
-#		pass
-
+	def getsomething(self, collumns="", where="", name=""):
+		""" """
+		response = self.dbprovider.getsomething(collumns, where, name)
+		return response
 
 class StockHandler(TableGroupHandler):
 	"""
@@ -173,6 +168,11 @@ class StockHandler(TableGroupHandler):
 	def getstockcode(self, pattern):
 		pass
 
+	def getsomething(self, collumns="", where="", name=""):
+		""" """
+		response = self.dbstock.getsomething(collumns, where, name)
+		return response
+
 class IndexHandler(TableGroupHandler):
 	"""
 	
@@ -195,4 +195,9 @@ class IndexHandler(TableGroupHandler):
 
 	def getindexcode(self, pattern):
 		pass
+
+	def getsomething(self, collumns="", where="", name=""):
+		""" """
+		response = self.dbindex.getsomething(collumns, where, name)
+		return response
 
