@@ -71,16 +71,6 @@ class TableGroupHandler:
 				i += 1
 		return tablelist
 
-	def verifytableexists(self, tablename):
-		""" 
-		return tablename if tablename in metatable, false otherwise
-		"""
-		dbhandler = db.DBHandler(db_path)
-		tableindb = dbhandler.gettablename(tablename)
-		if tableindb:
-			return tableindb
-			return
-
 class ProviderHandler(TableGroupHandler):
 	"""
 
@@ -124,18 +114,18 @@ class ProviderHandler(TableGroupHandler):
 
 	def addformattype(self, formattable, formatinfos):
 		"""
-		alter providertable with formatcollums ;
+		alter providertable with formatcolums ;
 		insert into formattable [ ( "formatname" , "explicit format name"), ]
 		"""
 		self.formattable = formattable
-		self.addformattype = db.DBProvider(self.db_path, self.table)
+		self.addformattype = db.ProviderDbHandler(self.db_path, self.table)
 		addformattypemessage  = self.addformattype.addformat(self.formattable,\
 													formatinfos)
 		return addformattypemessage
 
-	def getsomething(self, collumns="", where="", name=""):
+	def getsomething(self, columns="", where="", name=""):
 		""" """
-		response = self.dbprovider.getsomething(collumns, where, name)
+		response = self.dbprovider.getsomething(columns, where, name)
 		return response
 
 class StockHandler(TableGroupHandler):
@@ -165,9 +155,9 @@ class StockHandler(TableGroupHandler):
 		addmessage = self.dbstock.addnewstock(stockinfos, symboltable)
 		print(addmessage)
 
-	def getsomething(self, collumns="", where="", name=""):
+	def getsomething(self, columns="", where="", name=""):
 		""" """
-		response = self.dbstock.getsomething(collumns, where, name)
+		response = self.dbstock.getsomething(columns, where, name)
 		return response
 
 class IndexHandler(TableGroupHandler):
@@ -216,3 +206,20 @@ class SymbolHandler(TableGroupHandler):
 		""" """
 		response = self.dbsymbol.getsomething(columns, where, name)
 		return response
+	
+class FormatHandler:
+	""" 
+	The format adding passed throught ProviderHandler, as providertable is
+	altered by this process.
+
+	"""
+	def __init__(self, db_path, table):
+		self.db_path = db_path
+		self.table = table
+		self.dbformat = db.FormatDbHandler(self.db_path, self.table)
+	
+	def getsomething(self, columns="", where="", name=""):
+		""" """
+		response = self.dbformat.getsomething(columns, where, name)
+		return response
+

@@ -105,7 +105,7 @@ class DbHandler:
 
 	def getsomething(self, columns="", where="" , pattern=""):
 		"""
-		collum = ( column1, column2, )
+		column = ( column1, column2, )
 		where = column
 		pattern = ( 
 		return response = [ ( , ,), ] 
@@ -346,7 +346,7 @@ class ProviderDbHandler(DbHandler):
 
 	DATABASE STRUCTURE
 		(rowid)
-		name : "my_name" text MANDATORY, UNIQUE
+		providername : "my_name" text MANDATORY, UNIQUE
 		baseurl : "http://finance.$$$.com/cvsdownload/" text
 		preformat : "&formatquery="text
 		presymbol : "&symbolquery=%" text"
@@ -370,7 +370,7 @@ class ProviderDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		try:
 			cur.execute('''create table {} (
-					name text unique not null,
+					providername text unique not null,
 					baseurl text not null,
 					preformat text,
 					presymbol text )'''.format(self.table))
@@ -387,13 +387,13 @@ class ProviderDbHandler(DbHandler):
 		alreadyknownformat = []
 		for formatname in formatnames:
 			try:
-				cur.execute('''alter table {} add {} text)
+				cur.execute('''alter table {} add {} text
 						'''.format(self.table, formatname))
 				self.conn.commit()
 				cur.close
-			except OperationalError:
-				alreadyknownsformat.append(formatname)
-		return alreadyknownsformat
+			except sqlite3.OperationalError:
+				alreadyknownformat.append(formatname)
+		return alreadyknownformat
 
 	def _insertnewprovider(self):
 		""" """
@@ -401,8 +401,8 @@ class ProviderDbHandler(DbHandler):
 		providerrefused = []
 		for providerinfo in self.providerinfos:
 			try:
-				cur.execute('''insert into {} ("name", "baseurl", "preformat",
-						"presymbol") values (?,?,?,?)
+				cur.execute('''insert into {} ("providername", "baseurl", 
+				"preformat", "presymbol") values (?,?,?,?)
 						'''.format(self.table), providerinfo)
 				self.conn.commit()
 				cur.close()
@@ -476,52 +476,56 @@ class ProviderDbHandler(DbHandler):
 		message = "OK"
 		return message
 
-	def addformat(self, formatinfos, formattable):
+	def addformat(self, formattable, formatinfos):
 		"""
 		to add a format, we need to know ther providertable \
 								(self.table at instanciation)
-		formatinfos = [ ( "name", "explicit_name" ), ]
-		DBProvider._altertable(self.db, self.table)
-		DBFormat(self.db, formattable)._inserttable(formatinfos)
+		formatinfos = [ ( "sname", "explicit_name" ), ]
+		DbProvider._altertable(self.db, self.table)
+		DbFormat(self.db, formattable)._inserttable(formatinfos)
+		return formatnames = [ "name1", "name2", ]
 		"""
-		self.formatinfos = formatinfos
+		formatinfos = formatinfos
 
-		def _testinput(self, formatinfos):
+		def _testinput(formatinfos):
 			formatnames = []
 			for formatinfo in formatinfos:
 				for c in formatinfo[0]:
-					if c.isspace():
+					if c.isalnum():
+						pass
+					else:
 						print("format {} mustn't contain whitespaces. Please\
-						change it.\n".format(formatinfo[0]))
+change it.\n".format(formatinfo[0]))
 						return
 				formatnames.append(formatinfo[0])
-
-				if formatinfo[1].isalphanum():
-					pass
-				else:
-					print("format description {} must be alphanumeric, \
-					please\n".format(formatinfo[1]))
-					return
+				for c in formatinfo[1]:
+					if c.isprintable:
+						pass
+					else:
+						print("format description {} must be alphanumeric, \
+please\n".format(formatinfo[1]))
+						return
 			return formatnames
 
-		formatnames = self._testinput(self.formatinfos)
+		formatnames = _testinput(formatinfos)
 		if not formatnames:
 			message = "Please correct wrongly written values\n"
 			return message
-
 		# alter providertable with new format
-		formatrefused = self._alterwithnewformat(tup(formatnames))
+		formatrefused = self._alterwithnewformat(tuple(formatnames))
 		if formatrefused:
 			message = "format {} were already in {}\n\
 			".format(formatrefused, self.table)
+			print(message)
 			return message
 
 		# insert formatinfos in formattable
-		dbformat = FormatDbHandler(self.db, self.formattable)
+		dbformat = FormatDbHandler(self.db_path, formattable)
 		formatadd = dbformat._insertnewformat(formatinfos)
 		if formatadd:
 			message = "formats {} where already in {} database\n\
-			".format(formatadd, self.formattable)
+			".format(formatadd, formattable)
+			print(message)
 			return message
 		message = "OK"
 		return message
@@ -651,12 +655,12 @@ class FormatDbHandler(DbHandler):
 
 	DATABASE STRUCTURE
 		* (rowid)
-		* provider_alter_collum_name
+		* provider_alter_column_name
 		* format name human readable
 			
 	"""
 	def __init__(self, db_path, formattable):
-		DbHandler__init__(self, db_path)
+		DbHandler.__init__(self, db_path)
 		self.db_path = db_path
 		self.table = formattable
 		self.tablegroup = "format"
@@ -673,7 +677,7 @@ class FormatDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		try:
 			cur.execute('''create table {} (
-					collumname text unique,
+					columname text unique,
 					explicitname text not null)'''.format(self.table))
 			self.conn.commit()
 			cur.close()
@@ -683,7 +687,7 @@ class FormatDbHandler(DbHandler):
 			
 	def _insertnewformat(self, newformats):
 		"""
-		newformats = [(the DBProvider collums names, "long name" ),
+		newformats = [(the DBProvider colums names, "long name" ),
 						(	"name" , "name"	),
 						(	"sname", "short name"),
 						(	"lname", "long name"),
@@ -693,8 +697,8 @@ class FormatDbHandler(DbHandler):
 		formatrefused = []
 		for newformat in newformats:
 			try:
-				cur.execute('''insert into {} ("collumname", "explicitname") \
-						values(?,?))'''.format(self.table), newformat)
+				cur.execute('''insert into {} ("columname", "explicitname") \
+						values(?,?)'''.format(self.table), newformat)
 				self.conn.commit()
 				cur.close()
 			except sqlite3.IntegrityError:

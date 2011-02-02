@@ -73,7 +73,11 @@ class UserInteract:
 		if tablelist:
 			self.printtuple(tablelist)
 		userchoice = self.askuser("Table number, or new table name, please : ")
+		if not userchoice:
+			self.choosetable(tablegroup, message)
 		tablename = dbinteract._testtablename(userchoice, tablelist)
+		if not tablename:
+			self.choosetable(tablegroup, message)
 		return tablename
 
 class TableGroupHandlerInteract:
@@ -94,7 +98,7 @@ class TableGroupHandlerInteract:
 		function test that, and return the tablename chosen.
 		"""
 		if not userchoice:
-			addprovider(self.db_path)
+			return False
 		elif userchoice.isdigit():
 			i = int(userchoice) - 1
 			try:
@@ -103,13 +107,13 @@ class TableGroupHandlerInteract:
 			except IndexError:
 				message = "Please use alpha numeric for table name"
 				print(message)
-				addprovider(self.db_path)
-		elif userchoice.isalnum() or userchoice.isspace():
+				return False
+		elif userchoice.isalnum():       # or userchoice.isspace():(not needed)
 			return userchoice
 		else:
 			message = "Please use alpha numeric for table name"
 			print(message)
-			addprovider(self.db_path)
+			return False
 
 	def gettablegroups(self):
 		""" 
@@ -205,6 +209,25 @@ class TableHandlerInteract:
 		response = self.tablehandler.getsomething(columns, where, pattern)
 		return response
 
+	def addformat(self, formattable, formatinfos):
+		"""
+		should be (at first ?) only usable by Provider()
+		Provider() is the only class with method formatable(self)
+
+		insert into formattable formatinfos
+		and alter providertable with "colname" (formatinfos[n][0])
+		formatinfos = [ ( "colname", "explicit name") , ]
+		"""
+		response = self.tablehandler.addformattype(formattable, formatinfos)
+		return response
+
+	def getformat(self, formattable):
+		"""
+		formatteble = "formattable"
+		"""
+		tablehandler = model.FormatHandler(self.db_path, formattable)
+		response = tablehandler.getsomething( ("columname", "explicitname") )
+		return response
 
 class Provider(TableHandlerInteract):
 	""" 
@@ -227,12 +250,12 @@ class Provider(TableHandlerInteract):
 			table = self.table()
 		self.table = table
 		self.tablehandler = model.ProviderHandler(self.db_path, self.table)
-		if not name:
-			name = self.name()
-		self.name = name
+#		if not name:
+#			name = self.name()
+#		self.name = name
 
 	def table(self):
-		message = "Please select the table you want to navigate into"
+		message = "Please select the table you want to navigate into	: "
 		tablename = self.ui.choosetable(self.tablegroup, message)
 		return tablename
 
@@ -242,31 +265,54 @@ class Provider(TableHandlerInteract):
 		name = self.choosefromcolumn(("name",), message)
 		return name
 		
-	def baseurl(self):
-		baseurl = self.tablehandler.getsomething(("baseurl",), "name", \
-												self.name)
+	def baseurl(self, name=""):
+		if not name:
+			name = self.name()
+		baseurl = self.tablehandler.getsomething(("baseurl",), "providername",\
+																		name)
 		return baseurl[0][0]
 
-	def presymbol(self):
-		presymbol = self.tablehandler.getsomething(("presymbol",) , \
-														"name", self.name)
+	def presymbol(self, name=""):
+		if not name:
+			name = self.name()
+		presymbol = self.tablehandler.getsomething(("presymbol",), \
+													"providername", name)
 		return presymbol[0][0]
 
-	def preformat(self):
+	def preformat(self, name=""):
+		if not name:
+			name = self.name()
 		preformat = self.tablehandler.getsomething(("preformat",) ,\
-														"name", self.name )
+													"providername", name)
 		return preformat[0][0]
 
-	def formattable(self):
-		pass
+	def getinfos(self, name=""):
+		""" 
+		return = ( ( "name", self.name ),
+					("baseurl", url  ),
+					("presymbol", presymbol ),
+					(preformat , preformat), )
+		"""
+		if not name:
+			name = self.name()
+		url = self.baseurl(name)
+		preformat = self.preformat(name)
+		presymbol = self.presymbol(name)
+		selectedstuff = (("providername", name),("baseurl", url), \
+					("presymbol", presymbol), ("preformat", preformat ))
+		return selectedstuff
 
-	def getinfos(self, something=""):
-		""" """
-		url = self.baseurl()
-		preformat = self.preformat()
-		presymbol = self.presymbol()
-		selectedstuff = (("name", self.name),("baseurl", url), ("presymbol", \
-										presymbol), ("preformat", preformat ))
+	def formattable(self):
+		message = " Please select the format table	: "
+		formattable = self.ui.choosetable("format", message)
+		return formattable
+		
+	def formatinfos(self):
+		"""
+		return = ( ( "shortname", "long name" ), )
+		"""
+		formattable = self.formattable()
+		selectedstuff = self.getformat(formattable)
 		return selectedstuff
 		
 
@@ -297,7 +343,7 @@ class Symbol(TableHandlerInteract):
 	def provider(self):
 		""" Provider.name() """
 		prvd = Provider(self.db_path)
-		providername = prvd.name
+		providername = prvd.name()
 		return providername
 		
 	def getsymbol(self, provider="", code=""):
@@ -483,7 +529,6 @@ def addprovider(db_path):
 			providerinfos.append(providerinfo)
 			addprvd = usrint.askuser("add an other provider ? y/n :	")
 			if addprvd == "y":
-				print("\n")
 				interactuser()
 			return providerinfos
 
@@ -496,12 +541,16 @@ def addprovider(db_path):
 Most people will only need one provider's table. If you want to create a new \
 table, just write its name please."
 	providertable = usrint.choosetable("provider", message)
+	if not providertable:
+		addprovider(db_path)
 	providerinfos = getproviderinfos()
 	print("select SYMBOL's table")
 	message = "Which SYMBOL table do you want to use ?\n\
 Most people will only need one symbol's table. If you want to create a new \
 table, just write its name please."
 	symboltable = usrint.choosetable("symbol", message)
+	if not symboltable:
+		addprovider(db_path)
 	providerhandler = model.ProviderHandler(db_path, providertable)
 	providerhandler.addnewprovider(providerinfos, symboltable)
 
@@ -522,7 +571,6 @@ def addstock(db_path):
 			stockinfos.append(stockinfo)
 			addother = usrint.askuser("add an other stock ? y/n :	")
 			if addother == "y":
-				print("\n")
 				interactuser()
 			return stockinfos
 
@@ -537,11 +585,15 @@ You could that way create stocks tables by Type (environment, healcare,...), \
 locations, whateever you want.\n\
 If you want to create a new table, just write its name please."
 	stocktable = usrint.choosetable("stock", message)
+	if not stocktable:
+		addstock(db_path)
 	stockinfos = getstockinfos()
 	stockhandler = model.StockHandler(db_path, stocktable)
 	message = "Which SYMBOL table do you want to use for table {} ?"\
 	.format(stocktable)
 	symboltable = usrint.choosetable("symbol", message)
+	if not symboltable:
+		addstock(db_path)
 	stockhandler.addstock(stockinfos, symboltable)
 
 def addindex():
@@ -557,6 +609,8 @@ def addsymbol(db_path, newsymbols=[]):
 		pass
 	message = "Please choose symbol table"
 	symboltable = usrint.choosetable("symbol", message)
+	if not symboltable:
+		return
 	provider = Provider(db_path)
 	message = "To which kind of value will you add the symbol \n\
 k : stock\n\
@@ -573,10 +627,11 @@ x : index\n"
 		print("wrongly written value")
 		addsymbol(db_path)
 	valuename = value.name(value.code)
+	providername = provider.name()
 	symbol = usrint.askuser("What is the {}' symbol for the value \
-{}	: ".format(provider.name, valuename))
+{}	: ".format(providername, valuename))
 	symbolhandler = model.SymbolHandler(db_path, symboltable)
-	verifyadd = symbolhandler.addsymbol([(provider.name, value.code, symbol),])
+	verifyadd = symbolhandler.addsymbol([(providername, value.code, symbol),])
 	if not verifyadd:
 		print("add symbol OK")
 	else:
@@ -587,14 +642,37 @@ x : index\n"
 
 def addformat(db_path):
 	""" """
-	def gethandlerfromtables():
-		""" """
-		formattable = choosetable("format")
-		formathandler = gethandlerfromtables(db, formattable)
+	usrint = UserInteract(db_path)
 
 	def getformatinfos():
-		""" """
+		""" 
+		formatinfos = [ ( "columname" , "explicit name" ), 
+					( "shortnamewithoutspace", "long name to help" ),]
+		"""
+		formatinfos = []
+		def interactuser():
+			colname = usrint.askuser("shortnamewithoutspace	: ")
+			explname = usrint.askuser("long name to help	: ")
+			formatinfo = (colname, explname)
+			formatinfos.append(formatinfo)
+			addother = usrint.askuser("add an other format ? y/n : ")
+			if addother == "y":
+				interactuser()
+			return formatinfos
+		formatinfos = interactuser()
+		return formatinfos
 
+	print("Adding new format kind\n")
+	print("Select format table\n")
+	message = "Which format table do you want to use ?\n\
+If you want to create a new table, just write its name please."
+	formattable = usrint.choosetable("format", message)
+	if not formattable:
+		return
+	formatinfos = getformatinfos()
+	provider = Provider(db_path)
+	provider.addformat(formattable, formatinfos)
+			
 def selectstuff(db_path):
 	""" 
 	select anything from tables
@@ -634,6 +712,12 @@ into")
 	elif tablegroup == "index":
 		index = Index(db_path)
 		stuffselected = index.selectvalue()
+		userprint(stuffselected)
+		return stuffselected
+
+	elif tablegroup == "format":
+		provider = Provider(db_path)
+		stuffselected = provider.formatinfos()
 		userprint(stuffselected)
 		return stuffselected
 	else:
