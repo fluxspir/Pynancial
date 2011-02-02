@@ -70,8 +70,9 @@ class DbHandler:
 		cur.close()
 		return tablegrouplist
 
-	def gettableslist(self, tablegroup=()):
+	def gettableslist(self, tablegroup=""):
 		""" 
+		tablegroup = ( "grp1", "grp2" )
 		return tablelist : list of tablenames  [ name1, name2, ]
 		"""
 		cur = self.conn.cursor()
@@ -601,7 +602,7 @@ new symboltables {} be reliated.\n".format(self.table))
 				self.insertnewprovider(providernames)
 			except sqlite3.IntegrityError:
 				providerrefused.append(providername)
-				return providerrefused
+		return providerrefused
 
 	def _altertable(self, tokencodes):
 		"""
@@ -620,7 +621,27 @@ new symboltables {} be reliated.\n".format(self.table))
 				cur.close()
 			except sqlite3.OperationalError:
 				tokenrefused.append(tokencode)
-				return tokenrefused
+		return tokenrefused
+
+	def addsymbol(self, newsymbols):
+		"""
+		newsymbols = [( provider, value(token), symbol), ]
+		insert into self.table value
+		return symbolsrefused 
+		symbolrefused = [ ( providerrefused, valuerefused, symbolrefused),]
+		"""
+		cur = self.conn.cursor()
+		symbolrefused = []
+		for symbol in newsymbols:    # symbol = ( provider, value, symbol )
+			try:
+				insertvalues = (symbol[0], symbol[2])
+				cur.execute('''insert or replace into {} ("provider","{}") \
+				values (?,?)'''.format(self.table, symbol[1]), insertvalues)
+				self.conn.commit()
+				cur.close()
+			except sqlite3.IntegrityError:
+				symbolrefused.append(symbol)
+		return symbolrefused
 
 class FormatDbHandler(DbHandler):
 	"""

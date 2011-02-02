@@ -229,7 +229,6 @@ class Provider(TableHandlerInteract):
 		self.tablehandler = model.ProviderHandler(self.db_path, self.table)
 		if not name:
 			name = self.name()
-		##TODO test if given name OK
 		self.name = name
 
 	def table(self):
@@ -412,16 +411,13 @@ class Stock(Value):
 		self.db_path = db_path
 		self.tablegroup = "stock"
 		Value.__init__(self, db_path, self.tablegroup, table)
-#		if not code:
-#			if not name:
-#				message = "Please select the stock you want to use : "
-#				name = self.name( "" , message)
-#				code = self.code(name)
-#			code = self.code(name)
-		if code:
-			self.code = code
-		if name:
-			self.name = name
+		if not code:
+			if not name:
+				message = "Please select the stock you want to use : "
+				name = self.name( "" , message)
+				code = self.code(name)
+			code = self.code(name)
+		self.code = code
 
 	def getinfos(self):
 		"""
@@ -430,7 +426,7 @@ class Stock(Value):
 		"""
 		infos =( ("db_path", self.db_path), ("table", self.table ), ("code",\
 				self.code), ("name", self.name(self.code)), \
-				("location", self.location(self.code)) )
+				("locate", self.location(self.code)) )
 		return infos 
 
 class Index(Value):
@@ -556,27 +552,40 @@ def addsymbol(db_path, newsymbols=[]):
 	""" 
 	[ ( provider, value, symbol ), ]
 	"""
-	ursint = UserInteract(db_path)
+	usrint = UserInteract(db_path)
 	if newsymbols:
 		pass
-
+	message = "Please choose symbol table"
+	symboltable = usrint.choosetable("symbol", message)
 	provider = Provider(db_path)
-	message = "To which kind of value will you add the symbol ? "
-	groups ("stock", "index")
-	tablegroup = usrint.choosetablegroup(message, groups)
-	if tablegroup == "stock":
+	message = "To which kind of value will you add the symbol \n\
+k : stock\n\
+x : index\n"
+	usertablechoice = usrint.askuser(message)
+	message = "Choose value please"
+	if usertablechoice == "k":
+		userchoice = "stock"
 		value = Stock(db_path)
-	elif tablegroup == "index":
+	elif usertablechoice == "x":
+		userchoice = " index"
 		value = Index(db_path)
-	providername = provider.name()
-	valuecode = value.code()
-	valuename = value.name()
+	else:
+		print("wrongly written value")
+		addsymbol(db_path)
+	valuename = value.name(value.code)
 	symbol = usrint.askuser("What is the {}' symbol for the value \
-{}	: ".format(providername, valuename))
-	##TODO
-##	symbolhandler = model.Symbol
+{}	: ".format(provider.name, valuename))
+	symbolhandler = model.SymbolHandler(db_path, symboltable)
+	verifyadd = symbolhandler.addsymbol([(provider.name, value.code, symbol),])
+	if not verifyadd:
+		print("add symbol OK")
+	else:
+		print("these values weren't added :")
+		for r in verifyadd:
+			print("{}\t\t{}\t\t{}\n" \
+				.format(verifyadd[0], verifyadd[1], verify[2]))
 
-def addformat():
+def addformat(db_path):
 	""" """
 	def gethandlerfromtables():
 		""" """

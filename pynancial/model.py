@@ -201,12 +201,16 @@ class SymbolHandler(TableGroupHandler):
 		self.table = table
 		self.dbsymbol = db.SymbolDbHandler(self.db_path, self.table)
 
-	def addsymbol():
+	def addsymbol(self, newsymbols):
 		""" 
+		newsymbols = [ ( prvd , value, symbol), ]
 		insert into symboltable (codecolumn,) values ( symbol, )
 		where "provider" = (name,)
+		if everything ok, return false
+		otherwise, return list of symbols refused
 		"""
-		pass
+		verifyadd = self.dbsymbol.addsymbol(newsymbols)
+		return verifyadd
 
 	def getsomething(self, columns="", where="", name=""):
 		""" """
