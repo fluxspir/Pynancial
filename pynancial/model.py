@@ -116,12 +116,21 @@ class ProviderHandler(TableGroupHandler):
 		"""
 		alter providertable with formatcolums ;
 		insert into formattable [ ( "formatname" , "explicit format name"), ]
+		return 
 		"""
-		self.formattable = formattable
-		self.addformattype = db.ProviderDbHandler(self.db_path, self.table)
-		addformattypemessage  = self.addformattype.addformat(self.formattable,\
-													formatinfos)
-		return addformattypemessage
+		response  = self.dbprovider.addformat(formattable, formatinfos)
+		return response
+
+	def updateformat(self, formattable, urlformats):
+		""" 
+			urlformats = ( ("providername", "shortname", "urlformatstring" ) )
+		insert/replace into PROVIDERTABLE values ("providername","shortname",\
+															"urlformatstring" )
+		return = if False : everything want well
+				true = urlformatreject  = [ ( urlformats[x]), ]
+		"""
+		response = self.dbprovider.updateformat(formattable, urlformats)
+		return response
 
 	def getsomething(self, columns="", where="", name=""):
 		""" """

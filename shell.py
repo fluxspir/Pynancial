@@ -28,8 +28,8 @@ try:
 		response = userinteract.raw_input("What do you want to do ?\n\
 e : Extend database\n\
 f : Find in database\n\
+u : get URL\n\
 q : Quit\n")
-# 3 Create URL\n\
 
 		if response == "e":
 			response = userinteract.raw_input("What do you want to add ?\n\
@@ -45,7 +45,15 @@ y : symbol\t\tp : provider\t\tf : format\n")
 			elif response == "y":
 				addsymbol(db_path)
 			elif response == "f":
-				addformat(db_path)
+				print("1 : add a new kind of format\n\
+2 : insert a new format url string to an alreadyknown format")
+				userchoice = userinteract.raw_input(" 1 or 2  : ")
+				if userchoice == "1":
+					addformat(db_path)
+				elif userchoice == "2":
+					updateformat(db_path)
+				else:
+					pass
 			else:
 				pass
 
@@ -53,8 +61,7 @@ y : symbol\t\tp : provider\t\tf : format\n")
 			selectstuff(db_path)
 
 		elif response == "u":
-			""" build url"""
-			pass
+			buildurl(db_path)
 
 		elif response == "q":
 			quit()

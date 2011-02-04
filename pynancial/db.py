@@ -123,7 +123,7 @@ class DbHandler:
 						col = col + ", " + str(c)
 			else:
 				col = columns[0]
-
+		
 		if not where:
 			cur.execute('''select {} from {}'''.format(col, self.table))
 			response = cur.fetchall()
@@ -180,7 +180,7 @@ class StockDbHandler(DbHandler):
 		insert into stocktable values ( "code"(stockinfo[0]) ,\
 											"name"(stockinfo[1] ) 
 		"""
-		tokenrefused = []
+		stockinforefused= []
 		cur = self.conn.cursor()
 		for stockinfo in self.stockinfos:
 			try:
@@ -191,8 +191,8 @@ class StockDbHandler(DbHandler):
 			except sqlite3.OperationalError:
 				self._createtable()
 			except sqlite3.IntegrityError:
-				tokenrefused.append(tokencode)
-		return tokenrefused
+				stockinforefused.append(stockinfo)
+		return stockinforefused
 
 	def addnewstock(self, stockinfos, symboltable):
 		"""
@@ -530,6 +530,31 @@ please\n".format(formatinfo[1]))
 		message = "OK"
 		return message
 
+	def updateformat(self, formattable, urlformats):
+		""" 
+		urlformats = ( ("providername", "shortname", "urlformatstring" , ) )
+		 insert/replace into PROVIDERTABLE values ("providername","shortname",\
+		 												"urlformatstring" )
+		return
+		"""
+		cur = self.conn.cursor()
+		urlformatreject = []
+		for urlformat in urlformats:
+			# test if "shortname"(provider's columnname) exists in format table
+			# if not, insert format
+			#TODO should test values
+			formatvalues = (urlformat[2],)
+			try:
+				cur.execute('''update or replace {} set "{}"="{}" 
+								where "providername"="{}" '''\
+								.format(self.table, urlformat[1], \
+								urlformat[2], urlformat[0]))
+				self.conn.commit()
+				cur.close()
+			except sqlite3.IntegrityError:
+				urlformatreject.append(urlformat)
+		return urlformatreject
+
 class SymbolDbHandler(DbHandler):
 	"""
 
@@ -677,7 +702,7 @@ class FormatDbHandler(DbHandler):
 		cur = self.conn.cursor()
 		try:
 			cur.execute('''create table {} (
-					columname text unique,
+					columnname text unique,
 					explicitname text not null)'''.format(self.table))
 			self.conn.commit()
 			cur.close()
@@ -697,11 +722,15 @@ class FormatDbHandler(DbHandler):
 		formatrefused = []
 		for newformat in newformats:
 			try:
-				cur.execute('''insert into {} ("columname", "explicitname") \
+				cur.execute('''insert into {} ("columnname", "explicitname") \
 						values(?,?)'''.format(self.table), newformat)
 				self.conn.commit()
 				cur.close()
 			except sqlite3.IntegrityError:
 				formatrefused = []
 		return formatrefused
+
+	def testformat_provider(self, formatname, providertable):
+		""" """
+		pass
 

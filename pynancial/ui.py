@@ -139,7 +139,7 @@ class TableHandlerInteract:
 
 	def _orderresponse(self, unorderedlist):
 		""" 
-		response = [ ("x"), ("y"), ]
+		unorderedlist = [ ("x"), ("y"), ]
 		assign num to each tuple;
 		return = ( ( 1: "x"),(2:"y"), ]
 		"""
@@ -198,6 +198,30 @@ class TableHandlerInteract:
 			choice = testchoice
 		return choice
 
+	def multiplevaluesselector(self, column="", message="", where="", 
+															pattern=""):
+		""" 
+		display to user a list of  : num - name
+		user pick numbers from list
+		verify if only digits where chosen
+		return a list of value.code 
+		"""
+		def makelist(self, unordered):
+			""" 
+			unordered = ( ( , ) , ( , ) )
+			"""
+			orderedlist = []
+			i = 0
+			for t in unordered:
+				orderedlist.append((i, t[1]))
+			return orderedlist
+
+		if not column:
+			column = (code, name)
+		if not message:
+			message = "pick numbers, comma separated\n"
+		columnresponse = self.getsomething(column)
+
 	def getsomething(self, columns="", where="", pattern=""):
 		"""
 		select columns from self.table where where=pattern
@@ -224,9 +248,50 @@ class TableHandlerInteract:
 	def getformat(self, formattable):
 		"""
 		formatteble = "formattable"
+		return ( ("shortname","long name"), )
 		"""
 		tablehandler = model.FormatHandler(self.db_path, formattable)
-		response = tablehandler.getsomething( ("columname", "explicitname") )
+		response = tablehandler.getsomething( ("columnname", "explicitname") )
+		return response
+
+	def chooseformat(self, formattable, formatknown):
+		""" 
+		column = [("shortname", "long name"),]
+		will use shortname for dbinteract
+		will use "long name" for user interact
+
+		like choosefromcolumn, except for formattable
+		"""
+		formattablehandler = model.FormatHandler(self.db_path, formattable)
+		column = []
+		uiname = []
+		for c in formatknown:
+			column.append((c[0],))
+			uiname.append((c[1],))			
+		orderedname = self._orderresponse(uiname)
+		orderedcol = self._orderresponse(column)
+		if orderedname:
+			self.ui.printtuple(orderedname)
+		message = "choose format name please	: "
+		userchoice = self.ui.askuser(message)
+		testchoice = self._testuserchoice(userchoice, orderedcol)
+		if not testchoice:
+			self.chooseformat(formattable, columns, message)
+		else:
+			choice = testchoice
+		return choice
+
+	def updateformat(self, formattable, urlformats):
+		"""
+		formattable = "formattable"
+		urlformats = ( ("providername", "shortname", "urlformatstring" , ) )
+			verify in (urlformat) if urlformat[1]
+		insert/replace into PROVIDERTABLE values ("providername","shortname",\
+															"urlformatstring" )
+		return : response false : ok
+				else : response = [ (urlformat[x]), ]
+		"""
+		response = self.tablehandler.updateformat(formattable, urlformats)
 		return response
 
 class Provider(TableHandlerInteract):
@@ -262,7 +327,7 @@ class Provider(TableHandlerInteract):
 	def name(self):
 		""" select name from providertable"""
 		message = "Please select the provider you want to use	: "
-		name = self.choosefromcolumn(("name",), message)
+		name = self.choosefromcolumn(("providername",), message)
 		return name
 		
 	def baseurl(self, name=""):
@@ -500,13 +565,87 @@ class Index(Value):
 
 class UrlBuilder():
 	""" """
-	def __init__(self):
-		pass
-	def possession(self):
-		pass
-	def provider(self):
+	def __init__(self, db_path):
+		self.db_path = db_path
+
+	def _possessions(self, table="", code=""):
+		"""
+		code = ( code1, code2,)
+		return symbols = 
+		"""
+		ui = UserInteract(self.db_path)
+		codes = []
+		def choosevaluegroup(self):
+			""" 
+			propose to choose from stocks table, or index tables...
+			"""
+			knownvalues = ((0,"stock"),(1, "index"))
+			ui.printtuple(knownvalues)
+			userchoice = ui.askuser("choose value type	: ")
+			if not userchoice.isdigit():
+				choosevaluetype(self)
+			i = int(userchoice) - 1
+			try:
+				tablegroup = knownvalues[i][1]
+				return tablegroup
+			except IndexError:
+				print("please choose a tablegroup number")
+				return
+
+		def userinteract(self):
+			""" """
+			# get the group of values :
+			tablegroup = choosevaluegroup(self)
+			if tablegroup == "stock":
+				valuehandler = Stock(self.db_path)
+			elif tablegroup == "index":
+				valuehandler = Index(self.db_path)
+			else:
+				userinteract(self)
+			message = "Choose values, comma separated"
+			valuehandler.multiplevaluesselector(("code","name"), message)
+			pdb.set_trace()
+
+			addother = ui.askuser("add other values ? y/n ")
+			if addother == "y":
+				userinteract(self)
+			return codelist
+
+		codelist = userinteract(self)
+		print(codelist)
+		return values
+
+	def _providerinfos(self, table="", name=""):
+		"""
+		return infos = ("baseurl" , "preformat", "presymbol")
+		"""
+		provider = Provider(self.db_path, table)
+		providerinfos = provider.getinfos(name)
+		baseurl = providerinfos[1][1]
+		presymbol = providerinfos[2][1]
+		preformat = providerinfos[3][1]
+		infos = (baseurl, preformat, presymbol)
+		return infos
+	
+	def _providerpreformat(self, table="", name=""):
 		pass
 
+	def geturl(self, valuetable="", valuecodes="", providertable="", 
+														providername=""):
+		""" """
+		## values codes
+		symbols = self._possessions(valuetable, valuecodes)
+
+		pdb.set_trace()
+
+		## provider
+		(baseurl, preformat, presymbol) = self._providerinfos(providertable,\
+															providername)
+		## URL to return
+		url = baseurl + preformat + queryformat + presymbol + symbols
+		print(url)
+		quit()
+		return url
 
 def addprovider(db_path):
 	""" 
@@ -641,12 +780,14 @@ x : index\n"
 				.format(verifyadd[0], verifyadd[1], verify[2]))
 
 def addformat(db_path):
-	""" """
+	""" 
+	should add   formatinfos=""  above in definition
+	"""
 	usrint = UserInteract(db_path)
 
 	def getformatinfos():
 		""" 
-		formatinfos = [ ( "columname" , "explicit name" ), 
+		formatinfos = [ ( "columnname" , "explicit name" ), 
 					( "shortnamewithoutspace", "long name to help" ),]
 		"""
 		formatinfos = []
@@ -672,6 +813,50 @@ If you want to create a new table, just write its name please."
 	formatinfos = getformatinfos()
 	provider = Provider(db_path)
 	provider.addformat(formattable, formatinfos)
+
+def updateformat(db_path, providertable="", formattable="", urlformats=""):
+	"""
+	newformats = [ ( "providername","columnname","format" ), ]
+	insert the providerformatcode.
+	"""
+	usrint = UserInteract(db_path)
+	provider = Provider(db_path, providertable)
+	print("Inserting new formatstring")
+	if not formattable:
+		message = "Please choose the format table your formatsymbol \
+belongs to : "
+		formattable = usrint.choosetable("format", message)
+
+	def geturlformats():
+		urlformats = []
+		def interactuser():
+			message = "choose provider"
+			providername = provider.name()
+			message = "choose format name"
+			formatknown = provider.getformat(formattable)
+			columnname = provider.chooseformat(formattable, formatknown)
+			formatstring = usrint.askuser("format string please	: ")
+			urlformat = (providername, columnname, formatstring)
+			urlformats.append(urlformat)
+			addother = usrint.askuser("add an other formatstring ? y/n	: ")
+			if addother == "y":
+				interactuser()
+
+		interactuser()
+		return urlformats
+
+	if not urlformats:
+		urlformats = geturlformats()
+
+	response = provider.updateformat(formattable, urlformats)
+
+	if not response:
+		print("OK")
+		return
+	else:
+		print("these urlformats weren't added")
+		print(response)
+		return response
 			
 def selectstuff(db_path):
 	""" 
@@ -679,8 +864,8 @@ def selectstuff(db_path):
 	return the stuff selected
 	"""
 	usrint = UserInteract(db_path)
-	message = ("Please select what kind of tables you want to navigate \
-into")
+	message = "Please select what kind of tables you want to navigate \
+into"
 	tablegroup = usrint.choosetablegroup(message)
 
 	def userprint(stufftoprint):
@@ -723,10 +908,57 @@ into")
 	else:
 		return
 	return stuffselected
-	
+
+def buildurl(db_path):
+	"""
+	will construct the url
+	"""
+	usrint = UserInteract(db_path)
+	urlbuilder = UrlBuilder(db_path)
+	url = urlbuilder.geturl()
+	print(url)
+	return url
+
+#############################	
+#	def interactuser(valuehandler):
+#		""" 
+#		choice = ( code1, code2,... )
+#		"""
+#		valueslist = []
+#		message = "Please select the type of value you want :\n\
+#k : stock\n\
+#x : index\n"
+#		usertablechoice = usrint.askuser(message)
+#		if usertablechoice == "k":
+#			valuehandler = Stock(db_path)
+#			message = "Please choose stock table"
+#			valuetable = usrint.choosetable("stock", message)
+#		elif usertablechoice == "x":
+#			valuehandler = Index(db_path)
+#			message = "Please choose index table"
+#			valuetable = usrint.choosetable("index", message)
+#		else:
+#			pass
+#		choice = valuehandler.multiplechoicefromcolumn
+#		##TODO
+#		valuelist.append(choice)
+#		addother = usrint.askuser("add other values ?")
+#		if addother == "y":
+#			interactuser()
+#		return valuelist
+#	values = 
+#	provider = Provider(db_path)
+#	providername = provider.name()
+#	baseurl = provider.baseurl(providername)
+#	presymbol = provider.presymbol(providername)
+#	preformat = provider.preformat(providername)
+#	symbols = Symbol(db_path)
+#	corporations = symbol.getsymbol()
+#
+#	url = baseurl + preformat + queryformat + presymbol + symbols
+###########################
+
 def quit():
 	""" """
 	sys.exit(0)
-
-
 
