@@ -28,7 +28,7 @@ class TableGroupHandler:
 	def __init__(self, db_path):
 		self.db_path = db_path
 
-	def gettablegrouplist(self,):
+	def gettablegrouplist(self):
 		""" 
 		return tablegrouplist : list tuples which assignate
 		tablegrouplist = [ (number , tablegroup), ]
@@ -70,6 +70,8 @@ class TableGroupHandler:
 				tablelist.append((i, t[0]))
 				i += 1
 		return tablelist
+
+	
 
 class ProviderHandler(TableGroupHandler):
 	"""
@@ -168,6 +170,13 @@ class StockHandler(TableGroupHandler):
 		""" """
 		response = self.dbstock.getsomething(columns, where, name)
 		return response
+
+	def getstocklist(self):
+		"""
+		return : ( ( code, name ) )
+		"""
+		
+
 
 class IndexHandler(TableGroupHandler):
 	"""

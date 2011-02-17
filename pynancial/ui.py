@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+
 # (c) Franck LABADILLE
 # LICENCE BSD
 # 20110127
@@ -15,6 +15,7 @@ import code
 import sys
 import pynancial.model as model
 import pdb
+import re
 
 class UserInteract:
 	"""
@@ -63,7 +64,7 @@ class UserInteract:
 	def choosetable(self, tablegroup="", message=""):
 		"""
 		after displaying to user tables known, ask to user to pick one.
-	    returns the user's choice.
+	    returns the table the user chose.
 		"""
 		dbinteract = TableGroupHandlerInteract(self.db_path)
 		print("tablegroup = {}".format(tablegroup))
@@ -79,6 +80,144 @@ class UserInteract:
 		if not tablename:
 			self.choosetable(tablegroup, message)
 		return tablename
+
+	def parseresponse(self, userinput, tupplechoices):
+		"""
+		userinput : string of numbers and words. 
+			at least,   space separated (can add "commas, or anything else")
+
+		tupplechoices = ( ( int_1, "name" , "code"), ( 2, "name2", "code"), ]
+
+		le but de la fonction :
+			creer une liste de values (result);
+
+
+		userinput : * si c'est un nombre : 
+				result = la "value finale" = tupplechoice[userinput - 1][1]
+						: on veut le "name" correspondant au numéro rentré.
+					* si c'est alphanum:
+				result.append(recupération des "noms" contenant cette string)
+
+				result évite les résultats redondants
+
+		return result
+		"""
+		userlist = []
+		i = 0
+		splittedlist = re.split(r"[\s,;]+", userinput)
+		for elem in splittedlist:
+			elem = elem.strip()
+			def testalreadyknownentries(newentry, oldentries):
+				""" 
+				newentry : string to test
+				oldentries : list of user choices already validated
+				"""
+				if newentry not in oldentries:
+					oldentries.append(newentry)
+				return oldentries
+					
+			if elem.isdigit():
+				try:
+					elem = tupplechoices[int(elem) - 1][2]
+					userlist = testalreadyknownentries(elem, userlist)
+				except IndexError:
+					print("number entry {} erroneus ; ignoring".format(elem))
+
+			elif elem.isprintable():
+				## aller attraper dans la tupplechoices[*][1]
+				## tous les "names" qui contiennent la string elem
+				lowelem = elem.lower()
+				if lowelem.startswith("^"):
+					lowelem = "".join(lowelem.split("^"))
+					for possibility in tupplechoices:
+						if possibility[1].lower().startswith(str(lowelem)):
+							userlist = testalreadyknownentries(possibility[2],\
+																userlist)
+				elif lowelem.endswith("$"):
+					lowelem = "".join(lowelem.split("$"))
+					for possibility in tupplechoices:
+						if possibility[1].lower().endswith(str(lowelem)):
+							userlist = testalreadyknownentries(possibility[2],\
+																	userlist)
+				else:
+					for possibility in tupplechoices:
+						if not possibility[1].lower().find(lowelem) == -1:
+							userlist = testalreadyknownentries(possibility[2],\
+																	userlist)
+			else:
+				print("wrong value ; ignoring")
+		return userlist
+
+	def multchoicesvalues(self, tablegroup="", burnstate=""):
+		"""
+		SHOULDN'T BE USED WITH "ADD_SOMETHING() functions BECAUSE OF THE STEPS 
+		SKIPPING WHEN ONLY A SINGLE TABLEGROUP CHOICE
+
+		multiple choices values
+		navigate throught selections
+
+		if burnstate == "y"
+		drops ways without propositions and don't ask when only one choice 
+		possible.
+		tablegroup = ( "", "",)
+
+		return list of codes 
+		"""
+		
+		tablegrouphandler = TableGroupHandlerInteract(self.db_path)
+		handler = model.TableGroupHandler(self.db_path)
+		## get the tablegroup
+		if not tablegroup:
+			tablegroup = self.choosetablegroup()
+		else:
+			listgroup = []
+			if len(tablegroup) > 1:
+				i = 0
+				for g in tablegroup:
+					listgroup.append((i, g))
+					i += 1
+				self.printtuple(listgroup)
+				userchoice = self.askuser("Pick a table group please : ")
+				tablegroup = tablegrouphandler._testtablename(userchoice, \
+																	listgroup)
+			else:
+				## BE CAREFUL WITH ADD MODE
+				tablegroup = tablegroup[0]
+
+		try:
+			tablelist = handler.gettablelist(tablegroup)
+		except :
+			print("no such tablegroup {}.".format(tablegroup))
+			self.multchoicesvalues("", burnstate)
+
+		self.printtuple(tablelist)
+		response = self.askuser("Which table	: ")
+		pdb.set_trace()
+		if response.isdigit():
+			table = tablelist[int(response) - 1][1]
+		else:
+			self.multchoicevalues(tablegroup, burnstate)
+
+		if tablegroup == "stock":
+			tablehandler = model.StockHandler(self.db_path, table)
+		elif tablegroup == "index":
+			tablehandler = model.StockHandler(self.db_path, table)
+	
+		entries = tablehandler.getsomething(("code", "name"))
+		entrieslist = []
+		i = 0
+		for entry in entries:
+			entrieslist.append((i, entry[1], entry[0]))
+			i += 1
+		self.printtuple(entrieslist)
+		userchoice = self.askuser("Which values, comma separated, do you want \
+to use ?\n\
+you can pick number, \n\
+use  ^lal   to select all values beginning by 'lal'\n\
+use lal$	to select all values finishing by 'lal'\n\
+use   lal	to select all values contening 'lal'\n")
+		userlist = self.parseresponse(userchoice, entrieslist)
+		return userlist
 
 class TableGroupHandlerInteract:
 	""" 
@@ -274,6 +413,7 @@ class TableHandlerInteract:
 			self.ui.printtuple(orderedname)
 		message = "choose format name please	: "
 		userchoice = self.ui.askuser(message)
+		pdb.set_trace()
 		testchoice = self._testuserchoice(userchoice, orderedcol)
 		if not testchoice:
 			self.chooseformat(formattable, columns, message)
@@ -372,11 +512,12 @@ class Provider(TableHandlerInteract):
 		formattable = self.ui.choosetable("format", message)
 		return formattable
 		
-	def formatinfos(self):
+	def formatinfos(self, formattable=""):
 		"""
 		return = ( ( "shortname", "long name" ), )
 		"""
-		formattable = self.formattable()
+		if not formattable:
+			formattable = self.formattable()
 		selectedstuff = self.getformat(formattable)
 		return selectedstuff
 		
@@ -558,7 +699,8 @@ class Index(Value):
 	def valuesindexed(self):
 		""" 
 		return ( "stock1", "stock2", "stock3", ) 
-		needs a database
+		needs a databas
+		e
 		"""
 		#TODO
 		pass
@@ -567,80 +709,73 @@ class UrlBuilder():
 	""" """
 	def __init__(self, db_path):
 		self.db_path = db_path
+		self.ui = UserInteract(self.db_path)
 
-	def _possessions(self, table="", code=""):
+	def _possessions(self, table=""):
 		"""
 		code = ( code1, code2,)
 		return symbols = 
 		"""
-		ui = UserInteract(self.db_path)
 		codes = []
-		def choosevaluegroup(self):
-			""" 
-			propose to choose from stocks table, or index tables...
-			"""
-			knownvalues = ((0,"stock"),(1, "index"))
-			ui.printtuple(knownvalues)
-			userchoice = ui.askuser("choose value type	: ")
-			if not userchoice.isdigit():
-				choosevaluetype(self)
-			i = int(userchoice) - 1
-			try:
-				tablegroup = knownvalues[i][1]
-				return tablegroup
-			except IndexError:
-				print("please choose a tablegroup number")
-				return
-
-		def userinteract(self):
-			""" """
-			# get the group of values :
-			tablegroup = choosevaluegroup(self)
-			if tablegroup == "stock":
-				valuehandler = Stock(self.db_path)
-			elif tablegroup == "index":
-				valuehandler = Index(self.db_path)
-			else:
-				userinteract(self)
-			message = "Choose values, comma separated"
-			valuehandler.multiplevaluesselector(("code","name"), message)
-			pdb.set_trace()
-
-			addother = ui.askuser("add other values ? y/n ")
-			if addother == "y":
-				userinteract(self)
-			return codelist
-
-		codelist = userinteract(self)
-		print(codelist)
-		return values
+		codelist = self.ui.multchoicesvalues(("stock","index"), "")
+		return codelist
 
 	def _providerinfos(self, table="", name=""):
 		"""
-		return infos = ("baseurl" , "preformat", "presymbol")
+		return infos = ("name", "baseurl" , "preformat", "presymbol")
 		"""
-		provider = Provider(self.db_path, table)
+		providertable = self.ui.choosetable("provider")
+		provider = Provider(self.db_path, providertable)
 		providerinfos = provider.getinfos(name)
+		providername = providerinfos[0][1]
 		baseurl = providerinfos[1][1]
 		presymbol = providerinfos[2][1]
 		preformat = providerinfos[3][1]
-		infos = (baseurl, preformat, presymbol)
+		formatinfos = provider.formatinfos()
+		queryformat = self.ui.multchoicesvalues(("format",), "yes")
+		infos = (providername, baseurl, preformat, presymbol, queryformat)
+		pdb.set_trace()
 		return infos
 	
-	def _providerpreformat(self, table="", name=""):
-		pass
+	def _providerformat(self, table="", name=""):
+		""" 
+		return = ( 
+		"""
+#		formathandler = Provider, self.db_path, 
 
 	def geturl(self, valuetable="", valuecodes="", providertable="", 
 														providername=""):
-		""" """
-		## values codes
-		symbols = self._possessions(valuetable, valuecodes)
+		"""
+		valuecode = list of codes
+		"""
+		def multiple(outlist=""):
+			if not outlist:
+				outlist = []
+			##get the list of codes the user wants.
+			codelist = self._possessions(valuetable)
+			for code in codelist:
+				outlist.append(code)
 
-		pdb.set_trace()
+			addother = self.ui.askuser("Add others ?	y/n	")
+			if addother == "y":
+				multiple(outlist)
+			return outlist
+		
+		## codelist
+		if not valuecodes:
+			codes = multiple()
+		else:
+			codes = valuecodes
 
 		## provider
-		(baseurl, preformat, presymbol) = self._providerinfos(providertable,\
-															providername)
+		(providername, baseurl, preformat, presymbol, queryformat) = \
+							self._providerinfos(providertable, providername)
+
+		## get symbols for codes
+		symbol = Symbol(self.db_path)
+		symbolinfos = symbol.getsymbol(providername, codes[0])
+
+		## get the queryformats the user needs
 		## URL to return
 		url = baseurl + preformat + queryformat + presymbol + symbols
 		print(url)
@@ -752,14 +887,14 @@ def addsymbol(db_path, newsymbols=[]):
 		return
 	provider = Provider(db_path)
 	message = "To which kind of value will you add the symbol \n\
-k : stock\n\
-x : index\n"
+1 : stock\n\
+2 : index\n"
 	usertablechoice = usrint.askuser(message)
 	message = "Choose value please"
-	if usertablechoice == "k":
+	if usertablechoice == "1":
 		userchoice = "stock"
 		value = Stock(db_path)
-	elif usertablechoice == "x":
+	elif usertablechoice == "2":
 		userchoice = " index"
 		value = Index(db_path)
 	else:
@@ -918,45 +1053,6 @@ def buildurl(db_path):
 	url = urlbuilder.geturl()
 	print(url)
 	return url
-
-#############################	
-#	def interactuser(valuehandler):
-#		""" 
-#		choice = ( code1, code2,... )
-#		"""
-#		valueslist = []
-#		message = "Please select the type of value you want :\n\
-#k : stock\n\
-#x : index\n"
-#		usertablechoice = usrint.askuser(message)
-#		if usertablechoice == "k":
-#			valuehandler = Stock(db_path)
-#			message = "Please choose stock table"
-#			valuetable = usrint.choosetable("stock", message)
-#		elif usertablechoice == "x":
-#			valuehandler = Index(db_path)
-#			message = "Please choose index table"
-#			valuetable = usrint.choosetable("index", message)
-#		else:
-#			pass
-#		choice = valuehandler.multiplechoicefromcolumn
-#		##TODO
-#		valuelist.append(choice)
-#		addother = usrint.askuser("add other values ?")
-#		if addother == "y":
-#			interactuser()
-#		return valuelist
-#	values = 
-#	provider = Provider(db_path)
-#	providername = provider.name()
-#	baseurl = provider.baseurl(providername)
-#	presymbol = provider.presymbol(providername)
-#	preformat = provider.preformat(providername)
-#	symbols = Symbol(db_path)
-#	corporations = symbol.getsymbol()
-#
-#	url = baseurl + preformat + queryformat + presymbol + symbols
-###########################
 
 def quit():
 	""" """
