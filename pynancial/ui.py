@@ -192,7 +192,6 @@ class UserInteract:
 
 		self.printtuple(tablelist)
 		response = self.askuser("Which table	: ")
-		pdb.set_trace()
 		if response.isdigit():
 			table = tablelist[int(response) - 1][1]
 		else:
@@ -200,18 +199,22 @@ class UserInteract:
 
 		if tablegroup == "stock":
 			tablehandler = model.StockHandler(self.db_path, table)
+			entries = tablehandler.getsomething(("code", "name"))
 		elif tablegroup == "index":
-			tablehandler = model.StockHandler(self.db_path, table)
-	
-		entries = tablehandler.getsomething(("code", "name"))
+			tablehandler = model.IndexHandler(self.db_path, table)
+			entries = tablehandler.getsomething(("code", "name"))
+		elif tablegroup == "format":
+			tablehandler = model.FormatHandler(self.db_path, table)
+			entries = tablehandler.getsomething(("columnname", "explicitname"))
+
 		entrieslist = []
 		i = 0
 		for entry in entries:
 			entrieslist.append((i, entry[1], entry[0]))
 			i += 1
 		self.printtuple(entrieslist)
-		userchoice = self.askuser("Which values, comma separated, do you want \
-to use ?\n\
+		userchoice = self.askuser("Which values, comma separated, do you \
+want to use ?\n\
 you can pick number, \n\
 use  ^lal   to select all values beginning by 'lal'\n\
 use lal$	to select all values finishing by 'lal'\n\
@@ -413,7 +416,6 @@ class TableHandlerInteract:
 			self.ui.printtuple(orderedname)
 		message = "choose format name please	: "
 		userchoice = self.ui.askuser(message)
-		pdb.set_trace()
 		testchoice = self._testuserchoice(userchoice, orderedcol)
 		if not testchoice:
 			self.chooseformat(formattable, columns, message)
@@ -732,9 +734,12 @@ class UrlBuilder():
 		presymbol = providerinfos[2][1]
 		preformat = providerinfos[3][1]
 		formatinfos = provider.formatinfos()
-		queryformat = self.ui.multchoicesvalues(("format",), "yes")
+		queryformatlist = self.ui.multchoicesvalues(("format",), "yes")
+		tablehandler = model.ProviderHandler(self.db_path, providertable)
+		queryformatlist = tablehandler.getsomething(queryformatlist, \
+												"providername", providername)
+		queryformat = "".join(queryformatlist[0])
 		infos = (providername, baseurl, preformat, presymbol, queryformat)
-		pdb.set_trace()
 		return infos
 	
 	def _providerformat(self, table="", name=""):
@@ -773,7 +778,12 @@ class UrlBuilder():
 
 		## get symbols for codes
 		symbol = Symbol(self.db_path)
-		symbolinfos = symbol.getsymbol(providername, codes[0])
+		symbollist = []
+		for code in codes:
+			symbolinfo = symbol.getsymbol(providername, code)
+			symbollist.append(symbolinfo)
+		pdb.set_trace()
+		symbols = "+".join(symbollist)
 
 		## get the queryformats the user needs
 		## URL to return

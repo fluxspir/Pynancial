@@ -105,7 +105,7 @@ class DbHandler:
 
 	def getsomething(self, columns="", where="" , pattern=""):
 		"""
-		column = ( column1, column2, )
+		columns = ( column1, column2, )
 		where = column
 		pattern = ( 
 		return response = [ ( , ,), ] 
@@ -664,13 +664,24 @@ new symboltables {} be reliated.\n".format(self.table))
 		for symbol in newsymbols:    # symbol = ( provider, value, symbol )
 			try:
 				insertvalues = (symbol[0], symbol[2])
-				cur.execute('''insert or replace into {} ("provider","{}") \
-				values (?,?)'''.format(self.table, symbol[1]), insertvalues)
+				cur.execute('''update or replace {} set "{}"="{}"
+							where "provider"="{}" '''.format(self.table, \
+							symbol[1], symbol[2], symbol[0]))
+#				cur.execute('''update or replace {} set ("provider","{}") \
+#				values (?,?)'''.format(self.table, symbol[1]), insertvalues)
 				self.conn.commit()
 				cur.close()
 			except sqlite3.IntegrityError:
 				symbolrefused.append(symbol)
 		return symbolrefused
+
+#urlformats = ( ("providername", "shortname", "urlformatstring" , ) )
+#
+#				cur.execute('''update or replace {} set "{}"="{}" 
+#								where "providername"="{}" '''\
+#								.format(self.table, urlformat[1], \
+#								urlformat[2], urlformat[0]))
+#				self.conn.commit()
 
 class FormatDbHandler(DbHandler):
 	"""
