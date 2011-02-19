@@ -787,7 +787,6 @@ class UrlBuilder():
 		## get the queryformats the user needs
 		## URL to return
 		url = baseurl + preformat + queryformat + presymbol + symbols
-		print(url)
 		return url
 
 def addprovider(db_path):
