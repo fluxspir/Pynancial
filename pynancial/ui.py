@@ -782,14 +782,12 @@ class UrlBuilder():
 		for code in codes:
 			symbolinfo = symbol.getsymbol(providername, code)
 			symbollist.append(symbolinfo)
-		pdb.set_trace()
 		symbols = "+".join(symbollist)
 
 		## get the queryformats the user needs
 		## URL to return
 		url = baseurl + preformat + queryformat + presymbol + symbols
 		print(url)
-		quit()
 		return url
 
 def addprovider(db_path):
