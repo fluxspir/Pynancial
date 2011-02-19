@@ -1,0 +1,12 @@
+
+start with :
+
+$ ./shell.py path/to/database
+
+
+
+if you want to create a new database from scratch :
+	CREATE FIRST A NEW PROVIDER TABLE
+	THEN NEW STOCK TABLE
+
+
